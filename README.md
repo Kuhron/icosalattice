@@ -15,8 +15,6 @@ This lattice was originally conceived as a way to generate terrain for a made-up
 
 Place an icosahedron just inside the unit sphere such that one of its vertices lies at the sphere's north pole. The points on the sphere corresponding to this icosahedron's 12 vertices are labeled "A" through "L". The north pole is "A" and the south pole is "B". 
 
-#TODO diagram of icosahedron on sphere with world map and starting vertices labeled
-
 ![The locations of the 12 original vertices](StartingPoints.png "The locations of the 12 original vertices")
 
 The remaining 10 vertices (at latitude +/- arctan(1/2)) are labeled by "peel". A peel is a vertical slice made of 4 faces of the icosahedron. There are 5 peels, each touching the north and south poles.

@@ -1,0 +1,9 @@
+LICENSE
+README.md
+setup.py
+icosahedral_lattice/PlotStartingPoints.py
+icosahedral_lattice/__init__.py
+icosahedral_lattice.egg-info/PKG-INFO
+icosahedral_lattice.egg-info/SOURCES.txt
+icosahedral_lattice.egg-info/dependency_links.txt
+icosahedral_lattice.egg-info/top_level.txt
