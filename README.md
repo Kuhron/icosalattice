@@ -1,4 +1,4 @@
-# icosahedral-lattice
+# icosalattice
 This is a Python library which implements a lattice on the sphere (by this I mean the 2-sphere, which is the surface of a 3D sphere). The lattice is based on subdividing the edges and faces of an icosahedron to arbitrary precision.
 
 ## What does it do? / What is it for?
