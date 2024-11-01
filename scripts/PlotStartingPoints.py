@@ -7,8 +7,8 @@ import geopandas as gpd
 import math
 # import pandas as pd
 
-import icosahedral_lattice.IcosahedronMath as icm
-import icosahedral_lattice.MapCoordinateMath as mcm
+import icosalattice.IcosahedronMath as icm
+import icosalattice.MapCoordinateMath as mcm
 
 
 world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
