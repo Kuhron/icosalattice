@@ -1,7 +1,0 @@
-LICENSE
-README.md
-setup.py
-icosalattice.egg-info/PKG-INFO
-icosalattice.egg-info/SOURCES.txt
-icosalattice.egg-info/dependency_links.txt
-icosalattice.egg-info/top_level.txt
