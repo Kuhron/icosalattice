@@ -11,7 +11,7 @@ import icosalattice.IcosahedronMath as icm
 import icosalattice.MapCoordinateMath as mcm
 
 
-world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
+world = gpd.read_file("https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip")
 
 fig = plt.figure(figsize=(20, 10))
 ax = fig.add_subplot()
