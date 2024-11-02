@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "icosalattice"
+version = "0.0.1"
+authors = [
+  { name="Wesley Kuhron Jones" },
+]
+description = "An icosahedron-based lattice for the 2-sphere"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/Kuhron/icosalattice"
+Issues = "https://github.com/Kuhron/icosalattice/issues"
