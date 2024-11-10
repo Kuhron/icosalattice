@@ -3,6 +3,8 @@
 
 import math
 
+import icosalattice.PointCodeArithmetic as pca
+
 
 RING_LAT_DEG = math.atan(1/2) * 180/math.pi
 
@@ -20,6 +22,21 @@ def get_starting_points_latlon_named():
     }
     return icosahedron_original_points_latlon
 
+
+def get_iteration_born_from_point_code(pc):
+    enforce_no_trailing_zeros(pc)
+    return get_iteration_number_from_point_code(pc)
+
+
+def enforce_no_trailing_zeros(pc):
+    assert pc[-1] != "0", f"point code shouldn't have trailing zeros, got {pc}"
+
+
+def get_iteration_number_from_point_code(pc):
+    # this INCLUDES trailing zeros, we want to know what iteration something is at
+    # for iteration born, use get_iteration_born instead
+    # the initial points have length 1, just their letter A-L
+    return len(pc) - 1
 
 
 
@@ -345,13 +362,6 @@ def get_random_point_number(min_iterations, expected_iterations, max_iterations)
     return pn
 
 
-def get_iteration_number_from_point_code(pc):
-    # this INCLUDES trailing zeros, we want to know what iteration something is at
-    # for iteration born, use get_iteration_born instead
-    # the initial points have length 1, just their letter A-L
-    return len(pc) - 1
-
-
 def get_iterations_from_n_points(n):
     try:
         # n_points(n_iters) = 10 * (4**n_iters) + 2
@@ -412,13 +422,6 @@ def verify_can_have_children_from_point_number(pn, iteration):
         raise ValueError(f"point {pn} cannot have children")
     # point cannot have children in the same iteration when it is born, so require that the point existed one iteration ago (or earlier)
     return iteration > get_iteration_born_from_point_number(pn)
-
-
-def verify_can_have_children_from_point_code(pc, iteration):
-    # iteration must be greater than point's born iteration
-    if pc in ["A", "B"]:
-        raise ValueError(f"point {pc} cannot have children")
-    return iteration > get_iteration_born_from_point_code(pc)
 
 
 def is_valid_point_number(point_number, n_iterations):
@@ -638,17 +641,6 @@ def get_child_from_point_number(pn, child_index, iteration):
     return 3 * (pn + adder) + child_index
 
 
-def get_child_from_point_code(pc, child_index, iteration):
-    if pc in ["A", "B"]:
-        raise ValueError(f"point {pc} cannot have children")
-    verify_can_have_children_from_point_code(pc, iteration)
-    # pad with zeros if needed to get child at this iteration
-    pc0 = pc.ljust(iteration, "0")
-    child_index_str = str(child_index + 1)  # "0" is reserved for not moving and then making later child
-    assert child_index_str in ["1", "2", "3"], child_index_str
-    return pc0 + child_index_str
-
-
 # @functools.lru_cache(maxsize=10000)
 def get_children_from_point_number(pn, iteration):
     if pn in [0, 1]:
@@ -656,28 +648,6 @@ def get_children_from_point_number(pn, iteration):
     verify_can_have_children_from_point_number(pn, iteration)  # make sure parent exists and is old enough to have children
     adder = get_3adder_for_iteration(iteration)
     return [3 * (pn + adder) + child_index for child_index in [0, 1, 2]]
-
-
-def get_children_from_point_code(pc):
-    # including the null child where we keep the point in the same place
-    if pc[0] in ["A", "B"]:
-        # pole can't have children
-        if all(y == "0" for y in pc[1:]):
-            # it's actually the pole
-            # but we need to return the pole itself at this iteration (pseudo-child)
-            return [pc + "0"]
-        else:
-            raise ValueError(f"got reverse-encoded or invalid point code {pc}")
-    else:
-        return [pc + x for x in "0123"]
-
-
-def get_parent_from_point_code(pc):
-    if len(pc) == 1:
-        return None
-    if pc[-1] == "0":
-        return pc[:-1]  # treat it as its own parent when it stays in the same place
-    return strip_trailing_zeros(pc[:-1])
 
 
 def get_parent_from_lookup_number(ln):
@@ -691,42 +661,6 @@ def get_directional_parent_from_point_number(pn):
     pc = get_point_code_from_point_number(pn)
     dpar_code = get_directional_parent_from_point_code(pc)
     return get_point_number_from_point_code(dpar_code)
-
-
-def get_directional_parent_from_point_code(pc):
-    if pc[-1] == "0":
-        return pc[:-1]  # treat it as its own dpar when it stays in the same place
-    if len(pc) == 1:
-        return None
-    
-    reference_peel = bc.get_peel_containing_point_code(pc)
-
-    if bc.point_code_is_in_reversed_polarity_encoding(pc):
-        raise ValueError(f"got reverse-encoded {pc=}, please correct its encoding somewhere that we know which peel's perspective we are in")
-    
-    # faster than using adjacency and getting dpar at same index as this point's child_index
-    # convert it to the C-D peel and then convert the answer back to the correct peel
-    pc, peel_offset = normalize_peel(pc)
-    assert pc[0] in ["C", "D"], "peel normalization failed"
-
-    # cd_dpar = bc.get_directional_parent_from_point_code_using_box_corner_mapping(pc)
-    child_index = get_child_index_from_point_code(pc)
-    adj = get_adjacency_from_point_code(pc)
-    cd_dpar = adj[child_index]
-    
-    # keep trailing zeros during the recursive calls to box corner mapping
-    # but no longer need them here now that we have our final answer
-    cd_dpar = strip_trailing_zeros(cd_dpar)
-
-    # similarly undo reversed-polarity encoding if we got one of those
-    if bc.point_code_is_in_reversed_polarity_encoding(cd_dpar):
-        rev_cd_dpar = bc.correct_reversed_edge_polarity(cd_dpar, reference_peel)
-        # print(f"reversed {cd_dpar} to {rev_cd_dpar}")
-        cd_dpar = rev_cd_dpar
-
-    dpar = apply_peel_offset(cd_dpar, peel_offset)
-    # print(f"offset {cd_dpar} to {dpar}")
-    return dpar
 
 
 def get_directional_parent_from_lookup_number(ln):
@@ -864,19 +798,6 @@ def get_adjacency_from_point_number(pn, iteration=None):
     return [get_point_number_from_point_code(pc1) for pc1 in pcs]
 
 
-# @functools.lru_cache(maxsize=1000000)
-def get_adjacency_from_point_code(pc):
-    neighL = add_direction_to_point_code(pc, 1)
-    neighDL = add_direction_to_point_code(pc, 2)
-    neighD = add_direction_to_point_code(pc, 3)
-    neighR = add_direction_to_point_code(pc, -1)
-    neighUR = add_direction_to_point_code(pc, -2)
-    neighU = add_direction_to_point_code(pc, -3)
-    adj = [neighL, neighDL, neighD, neighR, neighUR, neighU]
-    # print(f"{pc=} has {adj=}")
-    return adj
-
-
 def get_neighbor_clockwise_step(central_point, central_point_adjacency, reference_neighbor, n_steps):
     if central_point == 0:
         # clockwise around the north pole is DL, opposite of UR
@@ -976,11 +897,6 @@ def get_child_index_from_point_number(pn):
     if pn < 12:
         return None
     return pn % 3
-
-
-def get_child_index_from_point_code(pc):
-    s = pc[-1]
-    return {"1": 0, "2": 1, "3": 2}[s]
 
 
 def get_parent_xyzs_from_point_code(pc):
@@ -1095,11 +1011,6 @@ def get_iteration_born_from_point_number(pn):
 
     # old way, np.log call is relatively slow for our purposes here
     # return math.ceil(get_exact_iterations_from_n_points(point_number+1))
-
-
-def get_iteration_born_from_point_code(pc):
-    enforce_no_trailing_zeros(pc)
-    return get_iteration_number_from_point_code(pc)
 
 
 def get_parent_point_direction_label(point_number):
@@ -1461,16 +1372,6 @@ def strip_repeating_last_digits(s):
     while has_repeating_last_digit(s):
         s = s[:-1]
     return s
-
-
-def strip_trailing_zeros(s):
-    while len(s) > 0 and s[-1] == "0":
-        s = s[:-1]
-    return s
-
-
-def enforce_no_trailing_zeros(pc):
-    assert pc[-1] != "0", f"point code shouldn't have trailing zeros, got {pc}"
 
 
 def print_first_dchildren(iteration):

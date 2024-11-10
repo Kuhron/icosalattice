@@ -16,6 +16,10 @@ def test_point_code_arithmetic():
         "D033": {-1: "F233", -2: "F232"},
         "C011": {-2: "E212", -3: "E211"},
         "D300": {-1: "F322", -2: "F233"},
+        "K121": {1: "I110", 2: "I101", 3: "K122"},
+        "K2": {3: "J1"},
+        "K22": {3: "J11"},
+        "K23": {2: "J11", 3: "J10"},
     }
     for pc, d in test_cases.items():
         for x, target in d.items():

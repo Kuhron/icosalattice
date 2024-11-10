@@ -7,7 +7,7 @@ import scipy
 from scipy import interpolate  # it seems on WSL I have to do this, importing the submodule, while on my Ubuntu laptop this is not necessary
 
 
-import IcosahedronMath as icm
+import icosalattice.IcosahedronMath as icm
 
 
 def scatter_icosa_points_by_number(point_numbers, show=True):
@@ -86,8 +86,8 @@ def plot_variable_at_point_codes(pcs, db, variable_name, xyzg, show=True):
     df = db.df
     df2 = df.loc[pcs,:]
     latlons = icm.get_latlons_from_point_codes(pcs, xyzg)
-    lats = [ll[0] for ll in lls]
-    lons = [ll[1] for ll in lls]
+    lats = [ll[0] for ll in latlons]
+    lons = [ll[1] for ll in latlons]
     variable_values = df2.loc[:, variable_name]
     plt.scatter(lons, lats, c=variable_values)
     plt.colorbar()

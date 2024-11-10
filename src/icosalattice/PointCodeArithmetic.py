@@ -340,3 +340,10 @@ def replace_zeros_with_twos(tail):
             assert c == "1" or c == "3", f"shouldn't be replacing 0->2 in string {tail}"
             res += c
     return res
+
+
+def strip_trailing_zeros(s):
+    while len(s) > 0 and s[-1] == "0":
+        s = s[:-1]
+    return s
+
