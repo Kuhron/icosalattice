@@ -24,6 +24,6 @@ def test_point_code_arithmetic():
     for pc, d in test_cases.items():
         for x, target in d.items():
             got = pca.add_direction_to_point_code(pc, x)
-            print(f"{pc} {x:+} = {got}")
+            # print(f"{pc} {x:+} = {got}")
             if got != target:
                 raise Exception(f"{pc} {x:+} = {target} but got {got}")

@@ -29,10 +29,9 @@ def get_directional_parent_from_point_code(pc):
     assert pc[0] in ["C", "D"], "peel normalization failed"
 
     # cd_dpar = bc.get_directional_parent_from_point_code_using_box_corner_mapping(pc)
-    child_index = get_child_index_from_point_code(pc)
+    birth_direction = get_birth_direction_from_point_code(pc)
     par = get_parent_from_point_code(pc)
-    adj = get_adjacency_from_point_code(par)
-    cd_dpar = adj[child_index]
+    cd_dpar = arith.add_direction_to_point_code(par, birth_direction)
     
     # keep trailing zeros during the recursive calls to box corner mapping
     # but no longer need them here now that we have our final answer
@@ -74,7 +73,7 @@ def get_children_from_point_code(pc):
         return [pc + x for x in "0123"]
 
 
-def get_child_index_from_point_code(pc):
+def get_birth_direction_from_point_code(pc):
     return int(pc[-1])
 
 
