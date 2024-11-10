@@ -1,9 +1,10 @@
 import math
 
-import icosahedral_lattice.MapCoordinateMath as mcm
+import icosalattice.MapCoordinateMath as mcm
+from icosalattice.UnitSpherePoint import UnitSpherePoint
 
 
-MID_LAT = math.atan(1/2) * 180/math.pi
+MID_LAT_DEG = math.atan(1/2) * 180/math.pi
 
 
 def get_starting_points_latlon_named():
@@ -11,9 +12,9 @@ def get_starting_points_latlon_named():
         # north pole
         "NP": (90, 0),
         # north ring of five points, star with a point at lon 0
-        "NR0": (MID_LAT, 0), "NRp72": (MID_LAT, 72), "NRp144": (MID_LAT, 144), "NRm72": (MID_LAT, -72), "NRm144": (MID_LAT, -144),
+        "NR0": (MID_LAT_DEG, 0), "NRp72": (MID_LAT_DEG, 72), "NRp144": (MID_LAT_DEG, 144), "NRm72": (MID_LAT_DEG, -72), "NRm144": (MID_LAT_DEG, -144),
         # south ring of five points, star with a point at lon 180
-        "SR180": (-MID_LAT, 180), "SRp108": (-MID_LAT, 108), "SRp36": (-MID_LAT, 36), "SRm108": (-MID_LAT, -108), "SRm36": (-MID_LAT, -36),
+        "SR180": (-MID_LAT_DEG, 180), "SRp108": (-MID_LAT_DEG, 108), "SRp36": (-MID_LAT_DEG, 36), "SRm108": (-MID_LAT_DEG, -108), "SRm36": (-MID_LAT_DEG, -36),
         # south pole
         "SP": (-90, 0),
     }

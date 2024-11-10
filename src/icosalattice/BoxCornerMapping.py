@@ -15,9 +15,6 @@
 # etc.
 
 
-# ---- UNSORTED STUFF BELOW ---- I have quarantined it so that I can draw on it if needed in icosahedral-lattice library, but won't be splitting files into part that lives in this repo and the rest that I don't need living in another file outside the repo ---- #
-
-"""
 PEELS = ["CD", "EF", "GH", "IJ", "KL"]
 
 
@@ -220,5 +217,3 @@ def separate_trailing_zeros(s):
 def get_peel_containing_point_code(pc):
     res, = [peel for peel in PEELS if pc[0] in peel]  # should be exactly one of CD, EF, GH, IJ, KL
     return res
-
-"""

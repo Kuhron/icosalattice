@@ -60,8 +60,8 @@ def d(a, b):
 #     for j in range(12):
 #         lli = label_to_latlon[letters[i]]
 #         llj = label_to_latlon[letters[j]]
-#         xyzi = mcm.unit_vector_lat_lon_to_cartesian(lli[0], lli[1], deg=True)
-#         xyzj = mcm.unit_vector_lat_lon_to_cartesian(llj[0], llj[1], deg=True)
+#         xyzi = mcm.unit_vector_latlon_to_cartesian(lli[0], lli[1], deg=True)
+#         xyzj = mcm.unit_vector_latlon_to_cartesian(llj[0], llj[1], deg=True)
 #         ds[letters[i]][letters[j]] = d(xyzi, xyzj)
 # df = (pd.DataFrame.from_dict(ds)*1000).round().astype(int)
 # print(df)

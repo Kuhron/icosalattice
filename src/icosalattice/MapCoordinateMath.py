@@ -10,7 +10,7 @@ def rad_to_deg(x):
     return x * 180 / np.pi
 
 
-def unit_vector_lat_lon_to_cartesian(lat, lon, deg=True):
+def unit_vector_latlon_to_cartesian(lat, lon, deg=True):
     if deg:
         # got deg from user
         lat = deg_to_rad(lat)
@@ -22,7 +22,7 @@ def unit_vector_lat_lon_to_cartesian(lat, lon, deg=True):
     return np.array([x, y, z])
 
 
-def unit_vector_cartesian_to_lat_lon(x, y, z, deg=True):
+def unit_vector_cartesian_to_latlon(x, y, z, deg=True):
     # latlon [0, 0] maps to xyz [1, 0, 0] (positive x comes out of Gulf of Guinea)
     # latlon [0, 90deg] maps to xyz [0, 1, 0] (positive y comes out of Indian Ocean)
     verify_unit_vector(x, y, z)
@@ -56,11 +56,69 @@ def mag_3d_simple(xyz):
     return (x**2 + y**2 + z**2) ** 0.5
 
 
+def get_latlon_of_point_on_map(r, c, map_r_size, map_c_size,
+                                map_r_min_c_min_lat, map_r_min_c_min_lon,
+                                map_r_min_c_max_lat, map_r_min_c_max_lon,
+                                map_r_max_c_min_lat, map_r_max_c_min_lon,
+                                map_r_max_c_max_lat, map_r_max_c_max_lon,
+                                deg=True):
+    # print("get_latlon_of_point r={}, c={}".format(r, c))
+    # like 3d printer
+    # go down the rows alpha_r of the way first on left and right edge
+    # then go alpha_c of the way across between those points
+    alpha_r = r / map_r_size
+    alpha_c = c / map_c_size
+    p00 = unit_vector_latlon_to_cartesian(map_r_min_c_min_lat, map_r_min_c_min_lon, deg=deg)
+    p01 = unit_vector_latlon_to_cartesian(map_r_min_c_max_lat, map_r_min_c_max_lon, deg=deg)
+    p10 = unit_vector_latlon_to_cartesian(map_r_max_c_min_lat, map_r_max_c_min_lon, deg=deg)
+    p11 = unit_vector_latlon_to_cartesian(map_r_max_c_max_lat, map_r_max_c_max_lon, deg=deg)
+
+    pr0 = rotate_partially_toward_other_unit_vector(p00, p10, alpha_r)
+    pr1 = rotate_partially_toward_other_unit_vector(p01, p11, alpha_r)
+    prc = rotate_partially_toward_other_unit_vector(pr0, pr1, alpha_c)
+    prc_latlon = unit_vector_cartesian_to_latlon(prc[0], prc[1], prc[2], deg=deg)
+    return prc_latlon
 
 
-# ---- UNSORTED STUFF BELOW ---- I have quarantined it so that I can draw on it if needed in icosahedral-lattice library, but won't be splitting files into part that lives in this repo and the rest that I don't need living in another file outside the repo ---- #
+def rotate_partially_toward_other_unit_vector(p, q, alpha):
+    # print("rotate_partially called\n- p shape {}:\n- q shape {}:\n- alpha shape {}:".format(p.shape, q.shape, alpha.shape))
+    # get vector starting from p and rotating alpha of the way towards q
+    assert p.shape[0] == q.shape[0] == 3, "must apply function to 3D vectors (perhaps with larger array structure inside those three elements), got p shape {}, q shape {}".format(p.shape, q.shape)
+    # assert abs(1-np.linalg.norm(p)) < 1e-6 and abs(1-np.linalg.norm(q)) < 1e-6, "must apply function to unit vectors"
+    assert (0 <= alpha).all() and (alpha <= 1).all(), "alpha must be between 0 and 1"
+    # if alpha == 0:
+    #     return p
+    # if alpha == 1:
+    #     return q
+    angle_p_q = angle_between_vectors(p, q)
+    angle_to_move = alpha * angle_p_q
+    # if angle_p_q == 0:
+    #     assert p == q, "got zero angle for unequal vectors"
+    #     return p
+    # if angle_p_q == np.pi:
+    #     assert p == -1*q, "got pi angle for non-opposite vectors"
+    #     raise ValueError("great circle direction is undefined for opposite vectors")
+    # https://stackoverflow.com/questions/22099490/calculate-vector-after-rotating-it-towards-another-by-angle-%CE%B8-in-3d-space
+    cross = cross_3d(cross_3d(p, q), p)
+    cross_mag = mag_3d(cross)
+    D_tick = cross / cross_mag
+    # print("angle_to_move shape {}\np shape {}\nD_tick shape {}".format(angle_to_move.shape, p.shape, D_tick.shape))
+    assert p.shape[0] == 3
+    assert D_tick.shape[0] == 3
+    cos_array = np.cos(angle_to_move)
+    sin_array = np.sin(angle_to_move)
+    z_p = np.zeros((3,) + alpha.shape)
+    z_d = np.zeros((3,) + alpha.shape)
+    for i in range(3):
+        # https://stackoverflow.com/questions/17123350/mapping-element-wise-a-numpy-array-into-an-array-of-more-dimensions
+        z_p[i, ...] = cos_array * p[i]
+        z_d[i, ...] = sin_array * D_tick[i]
+    z = z_p + z_d
+    assert z.shape[1:] == alpha.shape, "shape problem, got z shape {}".format(z.shape)
+    assert z.shape[0] == 3, "shape problem, got z shape {}".format(z.shape)
+    # print("- returning z")
+    return z
 
-"""
 
 def verify_3d_match(v1, v2):
     assert v1.shape[0] == v2.shape[0] == 3, "shape error, expected 3d vectors, perhaps with larger array structure inside those elements, got shapes {} and {}".format(v1.shape, v2.shape)
@@ -111,69 +169,21 @@ def vector_rejection_3d(v1, v2):
     return v1 - (dot_3d(v1, v2) / dot_3d(v2, v2)) * v2
 
 
-def rotate_partially_toward_other_unit_vector(p, q, alpha):
-    # print("rotate_partially called\n- p shape {}:\n- q shape {}:\n- alpha shape {}:".format(p.shape, q.shape, alpha.shape))
-    # get vector starting from p and rotating alpha of the way towards q
-    assert p.shape[0] == q.shape[0] == 3, "must apply function to 3D vectors (perhaps with larger array structure inside those three elements), got p shape {}, q shape {}".format(p.shape, q.shape)
-    # assert abs(1-np.linalg.norm(p)) < 1e-6 and abs(1-np.linalg.norm(q)) < 1e-6, "must apply function to unit vectors"
-    assert (0 <= alpha).all() and (alpha <= 1).all(), "alpha must be between 0 and 1"
-    # if alpha == 0:
-    #     return p
-    # if alpha == 1:
-    #     return q
-    angle_p_q = angle_between_vectors(p, q)
-    angle_to_move = alpha * angle_p_q
-    # if angle_p_q == 0:
-    #     assert p == q, "got zero angle for unequal vectors"
-    #     return p
-    # if angle_p_q == np.pi:
-    #     assert p == -1*q, "got pi angle for non-opposite vectors"
-    #     raise ValueError("great circle direction is undefined for opposite vectors")
-    # https://stackoverflow.com/questions/22099490/calculate-vector-after-rotating-it-towards-another-by-angle-%CE%B8-in-3d-space
-    cross = cross_3d(cross_3d(p, q), p)
-    cross_mag = mag_3d(cross)
-    D_tick = cross / cross_mag
-    # print("angle_to_move shape {}\np shape {}\nD_tick shape {}".format(angle_to_move.shape, p.shape, D_tick.shape))
-    assert p.shape[0] == 3
-    assert D_tick.shape[0] == 3
-    cos_array = np.cos(angle_to_move)
-    sin_array = np.sin(angle_to_move)
-    z_p = np.zeros((3,) + alpha.shape)
-    z_d = np.zeros((3,) + alpha.shape)
-    for i in range(3):
-        # https://stackoverflow.com/questions/17123350/mapping-element-wise-a-numpy-array-into-an-array-of-more-dimensions
-        z_p[i, ...] = cos_array * p[i]
-        z_d[i, ...] = sin_array * D_tick[i]
-    z = z_p + z_d
-    assert z.shape[1:] == alpha.shape, "shape problem, got z shape {}".format(z.shape)
-    assert z.shape[0] == 3, "shape problem, got z shape {}".format(z.shape)
-    # print("- returning z")
-    return z
+def xyz_distance(xyz0, xyz1):
+    # make it simple and fast, no numpy
+    x0, y0, z0 = xyz0
+    x1, y1, z1 = xyz1
+    dx = x1 - x0
+    dy = y1 - y0
+    dz = z1 - z0
+    dxyz = (dx, dy, dz)
+    return mag_3d_simple(dxyz)
 
 
-def get_lat_lon_of_point_on_map(r, c, map_r_size, map_c_size,
-                                map_r_min_c_min_lat, map_r_min_c_min_lon,
-                                map_r_min_c_max_lat, map_r_min_c_max_lon,
-                                map_r_max_c_min_lat, map_r_max_c_min_lon,
-                                map_r_max_c_max_lat, map_r_max_c_max_lon,
-                                deg=True):
-    # print("get_lat_lon_of_point r={}, c={}".format(r, c))
-    # like 3d printer
-    # go down the rows alpha_r of the way first on left and right edge
-    # then go alpha_c of the way across between those points
-    alpha_r = r / map_r_size
-    alpha_c = c / map_c_size
-    p00 = unit_vector_lat_lon_to_cartesian(map_r_min_c_min_lat, map_r_min_c_min_lon, deg=deg)
-    p01 = unit_vector_lat_lon_to_cartesian(map_r_min_c_max_lat, map_r_min_c_max_lon, deg=deg)
-    p10 = unit_vector_lat_lon_to_cartesian(map_r_max_c_min_lat, map_r_max_c_min_lon, deg=deg)
-    p11 = unit_vector_lat_lon_to_cartesian(map_r_max_c_max_lat, map_r_max_c_max_lon, deg=deg)
 
-    pr0 = rotate_partially_toward_other_unit_vector(p00, p10, alpha_r)
-    pr1 = rotate_partially_toward_other_unit_vector(p01, p11, alpha_r)
-    prc = rotate_partially_toward_other_unit_vector(pr0, pr1, alpha_c)
-    prc_lat_lon = unit_vector_cartesian_to_lat_lon(prc[0], prc[1], prc[2], deg=deg)
-    return prc_lat_lon
+# ---- UNSORTED STUFF BELOW ---- I have quarantined it so that I can draw on it if needed in icosalattice library, but won't be splitting files into part that lives in this repo and the rest that I don't need living in another file outside the repo ---- #
 
+"""
 
 def get_radius_about_center_surface_point_for_circle_of_area_proportion_on_unit_sphere(area_sphere_proportion):
     assert 0 < area_sphere_proportion < 1, "expected size must be proportion of sphere surface area between 0 and 1, but got {}".format(area_sphere_proportion)
@@ -197,17 +207,6 @@ def get_radius_about_center_surface_point_for_circle_of_area_proportion_on_unit_
     return radius_from_center_in_3d
 
 
-def xyz_distance(xyz0, xyz1):
-    # make it simple and fast, no numpy
-    x0, y0, z0 = xyz0
-    x1, y1, z1 = xyz1
-    dx = x1 - x0
-    dy = y1 - y0
-    dz = z1 - z0
-    dxyz = (dx, dy, dz)
-    return mag_3d_simple(dxyz)
-
-
 def get_unit_sphere_midpoint_from_xyz(xyz0, xyz1):
     # do it simple with basic math functions, no numpy casting or anything fancy, want fast
     x0, y0, z0 = xyz0
@@ -220,31 +219,6 @@ def get_unit_sphere_midpoint_from_xyz(xyz0, xyz1):
     m = (xm / mag, ym / mag, zm / mag)
     assert abs(mag_3d_simple(m) - 1) < 1e-9
     return m
-
-
-if __name__ == "__main__":
-    print("testing MapCoordinateMath.py")
-    r_size = 2000
-    c_size = 900
-    r = 1100
-    c = 880
-    # lat00, lon00 = 51.5074, -0.1278  # London
-    # lat01, lon01 = 60.1699, 24.9384  # Helsinki
-    # lat10, lon10 = 40.4168, -3.7038  # Madrid
-    # lat11, lon11 = 41.0082, 28.9784  # Istanbul
-    lat00, lon00 = -33.9249, 18.4241  # Cape Town
-    lat01, lon01 = -31.9505, 115.8605  # Perth
-    lat10, lon10 = -54.8019, -68.3030  # Ushuaia
-    lat11, lon11 = -41.2865, 174.7762  # Wellington
-    p = get_lat_lon_of_point_on_map(r, c, r_size, c_size,
-        lat00, lon00, lat01, lon01, lat10, lon10, lat11, lon11, deg=True)
-    # print(p)
-
-    plt.subplot(111, projection="mollweide")
-    p = plt.plot([-1, 1, 1], [-1, -1, 1], "o-")
-    plt.grid(True)
-
-    plt.show()
 
     
 """

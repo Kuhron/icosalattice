@@ -12,9 +12,9 @@ def get_starting_points_latlon_named():
         # north pole
         "NP": (90, 0),
         # north ring of five points, star with a point at lon 0
-        "NR0": (RING_LATITUDE_DEG, 0), "NRp72": (RING_LATITUDE_DEG, 72), "NRp144": (RING_LATITUDE_DEG, 144), "NRm72": (RING_LATITUDE_DEG, -72), "NRm144": (RING_LATITUDE_DEG, -144),
+        "NR0": (RING_LAT_DEG, 0), "NRp72": (RING_LAT_DEG, 72), "NRp144": (RING_LAT_DEG, 144), "NRm72": (RING_LAT_DEG, -72), "NRm144": (RING_LAT_DEG, -144),
         # south ring of five points, star with a point at lon 180
-        "SR180": (-RING_LATITUDE_DEG, 180), "SRp108": (-RING_LATITUDE_DEG, 108), "SRp36": (-RING_LATITUDE_DEG, 36), "SRm108": (-RING_LATITUDE_DEG, -108), "SRm36": (-RING_LATITUDE_DEG, -36),
+        "SR180": (-RING_LAT_DEG, 180), "SRp108": (-RING_LAT_DEG, 108), "SRp36": (-RING_LAT_DEG, 36), "SRm108": (-RING_LAT_DEG, -108), "SRm36": (-RING_LAT_DEG, -36),
         # south pole
         "SP": (-90, 0),
     }
@@ -23,7 +23,7 @@ def get_starting_points_latlon_named():
 
 
 
-# ---- UNSORTED STUFF BELOW ---- I have quarantined it so that I can draw on it if needed in icosahedral-lattice library, but won't be splitting files into part that lives in this repo and the rest that I don't need living in another file outside the repo ---- #
+# ---- UNSORTED STUFF BELOW ---- I have quarantined it so that I can draw on it if needed in icosalattice library, but won't be splitting files into part that lives in this repo and the rest that I don't need living in another file outside the repo ---- #
 
 """
 import math
@@ -46,7 +46,6 @@ import PlottingUtil as pu
 EARTH_RADIUS_KM = 6371
 CADA_II_RADIUS_FACTOR = 2.116
 CADA_II_RADIUS_KM = CADA_II_RADIUS_FACTOR * EARTH_RADIUS_KM
-RING_LATITUDE_DEG = math.atan(1/2) * 180/math.pi
 
 # for converting between {point code, number array, lookup number}
 LETTER_TO_NUMBER_DICT = {c:i for i,c in enumerate("CDEFGHIJKL")}
@@ -144,7 +143,7 @@ def get_latlon_from_lookup_number(ln, xyzg):
     else:
         xyz = xyzg[ln]
     
-    return mcm.unit_vector_cartesian_to_lat_lon(*xyz)
+    return mcm.unit_vector_cartesian_to_latlon(*xyz)
 
 
 def get_latlon_of_initial_point_number(pn):
@@ -164,7 +163,7 @@ def get_latlon_of_initial_lookup_number(ln):
 
 def get_latlon_from_point_number(pn):
     xyz = get_xyz_from_point_number_recursive(pn)
-    return mcm.unit_vector_cartesian_to_lat_lon(*xyz)
+    return mcm.unit_vector_cartesian_to_latlon(*xyz)
 
 
 def get_latlons_from_point_numbers(pns):
@@ -511,7 +510,7 @@ def get_starting_points():
     for point_number, p_name in enumerate(original_points_order_by_name):
         point_index = len(ordered_points)
         p_latlon = icosahedron_original_points_latlon[p_name]
-        p_xyz = mcm.unit_vector_lat_lon_to_cartesian(*p_latlon)
+        p_xyz = mcm.unit_vector_latlon_to_cartesian(*p_latlon)
         coords_dict = {"xyz": p_xyz, "latlondeg": p_latlon}
         usp = UnitSpherePoint(coords_dict, point_number)
         ordered_points.append(usp)
@@ -1143,7 +1142,7 @@ def get_nearest_icosa_point_at_lower_iteration(pc, iterations, xyzg):
 
 def get_nearest_icosa_point_to_latlon(latlon, maximum_distance, planet_radius):
     lat, lon = latlon
-    xyz = mcm.unit_vector_lat_lon_to_cartesian(lat, lon)
+    xyz = mcm.unit_vector_latlon_to_cartesian(lat, lon)
     return get_nearest_icosa_point_to_xyz(xyz, maximum_distance, planet_radius)
 
 
@@ -1173,7 +1172,7 @@ def get_nearest_icosa_point_to_xyz(xyz, maximum_distance, planet_radius):
 
 def get_nearest_neighbor_to_latlon(latlon, candidates_usp):
     lat, lon = latlon
-    xyz = mcm.unit_vector_lat_lon_to_cartesian(lat, lon)
+    xyz = mcm.unit_vector_latlon_to_cartesian(lat, lon)
     candidates_dict = {c.xyz(): c for c in candidates_usp}
     candidates_xyz = list(candidates_dict.keys())
     nn_xyz, d = get_nearest_neighbor_xyz_to_xyz(xyz, candidates_xyz)
