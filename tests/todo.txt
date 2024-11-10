@@ -1,3 +1,2 @@
 tests to make
-- test par/dpar relations on starting points (they shouldn't have any par or dpar)
-- test when a starting point is a dpar
+- 

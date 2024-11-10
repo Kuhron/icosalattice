@@ -19,7 +19,6 @@ pyogrio==0.10.0
 pyparsing==3.2.0
 pyproj==3.7.0
 pyproject_hooks==1.2.0
-pytest==8.3.3
 python-dateutil==2.9.0.post0
 pytz==2024.2
 shapely==2.0.6
