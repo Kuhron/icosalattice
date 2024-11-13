@@ -198,7 +198,7 @@ def area_of_triangle_from_vertices_3d(xyz0, xyz1, xyz2):
 
 
 def get_plane_containing_three_points_3d(xyz0, xyz1, xyz2):
-    # equation of form ax * x + ay * y + az * z = c
+    # plane equation of form ax*x + ay*y + az*z = c
     # https://math.stackexchange.com/questions/2686606/equation-of-a-plane-passing-through-3-points
     x0, y0, z0 = xyz0
     x1, y1, z1 = xyz1
@@ -212,6 +212,23 @@ def get_plane_containing_three_points_3d(xyz0, xyz1, xyz2):
     assert abs(ax*x1 + ay*y1 + az*z1 - c) < 1e-9, "error in solving for plane"
     assert abs(ax*x2 + ay*y2 + az*z2 - c) < 1e-9, "error in solving for plane"
     return ax, ay, az, c
+
+
+def get_projection_dilation_ratio_of_point_onto_plane(xyz, ax, ay, az, c):
+    # plane equation of form ax*x + ay*y + az*z = c
+    xp, yp, zp = xyz
+    c_of_p = ax*xp + ay*yp + az*zp
+    if abs(c_of_p) < 1e-9:
+        ratio = 1 if abs(c) < 1e-9 else float("inf") if c > 0 else -float("inf")
+    else:
+        ratio = c/c_of_p
+    return ratio
+
+
+def project_point_onto_plane(xyz, ax, ay, az, c):
+    # plane equation of form ax*x + ay*y + az*z = c
+    r = get_projection_dilation_ratio_of_point_onto_plane(xyz, ax, ay, az, c)
+    return xyz * r
 
 
 def get_unit_sphere_midpoint_from_latlon(latlon0, latlon1, as_array=True):

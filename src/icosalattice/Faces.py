@@ -59,18 +59,12 @@ def get_plane_parameters_of_faces():
 
 def get_faces_of_point_by_plane_projection(p):
     p_xyz = p.xyz(as_array=True)
-    xp, yp, zp = p_xyz
     chosen_faces = []
     best_ratio = None
     plane_parameters_by_face = get_plane_parameters_of_faces()
     for face_name in FACE_NAMES:
         ax, ay, az, c = plane_parameters_by_face[face_name]
-        c_of_p = ax*xp + ay*yp + az*zp
-        
-        if abs(c_of_p) < 1e-9:
-            ratio = 1 if abs(c) < 1e-9 else float("inf") if c > 0 else -float("inf")
-        else:
-            ratio = c/c_of_p
+        ratio = mcm.get_projection_dilation_ratio_of_point_onto_plane(p_xyz, ax, ay, az, c)
         
         if ratio < 0:
             # face is on the other side of the planet, ignore
