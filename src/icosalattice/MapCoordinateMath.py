@@ -10,7 +10,7 @@ def rad_to_deg(x):
     return x * 180 / np.pi
 
 
-def unit_vector_latlon_to_cartesian(lat, lon, deg=True):
+def unit_vector_latlon_to_cartesian(lat, lon, deg=True, as_array=True):
     if deg:
         # got deg from user
         lat = deg_to_rad(lat)
@@ -19,10 +19,13 @@ def unit_vector_latlon_to_cartesian(lat, lon, deg=True):
     y = np.sin(lon) * np.cos(lat)
     z = np.sin(lat)
     verify_unit_vector(x, y, z)
-    return np.array([x, y, z])
+    if as_array:
+        return np.array([x, y, z])
+    else:
+        return (float(x), float(y), float(z))  # get rid of np types
 
 
-def unit_vector_cartesian_to_latlon(x, y, z, deg=True):
+def unit_vector_cartesian_to_latlon(x, y, z, deg=True, as_array=True):
     # latlon [0, 0] maps to xyz [1, 0, 0] (positive x comes out of Gulf of Guinea)
     # latlon [0, 90deg] maps to xyz [0, 1, 0] (positive y comes out of Indian Ocean)
     verify_unit_vector(x, y, z)
@@ -36,7 +39,10 @@ def unit_vector_cartesian_to_latlon(x, y, z, deg=True):
         lon = rad_to_deg(lon)
 
     # input("{} {} {} -> {} {}".format(x, y, z, lat, lon))
-    return np.array([lat, lon])
+    if as_array:
+        return np.array([lat, lon])
+    else:
+        return (float(lat), float(lon))  # get rid of np types
 
 
 def verify_unit_vector(x, y, z):
@@ -180,6 +186,57 @@ def xyz_distance(xyz0, xyz1):
     return mag_3d_simple(dxyz)
 
 
+def area_of_triangle_from_vertices_3d(xyz0, xyz1, xyz2):
+    # https://www.quora.com/How-can-I-find-the-area-of-a-triangle-in-3D-coordinate-geometry
+    x0, y0, z0 = xyz0
+    x1, y1, z1 = xyz1
+    x2, y2, z2 = xyz2
+    ab = np.array([x1-x0, y1-y0, z1-z0])
+    ac = np.array([x2-x0, y2-y0, z2-z0])
+    cp = np.cross(ab, ac)
+    return 1/2 * np.linalg.norm(cp)
+
+
+def get_plane_containing_three_points_3d(xyz0, xyz1, xyz2):
+    # equation of form ax * x + ay * y + az * z = c
+    # https://math.stackexchange.com/questions/2686606/equation-of-a-plane-passing-through-3-points
+    x0, y0, z0 = xyz0
+    x1, y1, z1 = xyz1
+    x2, y2, z2 = xyz2
+    ab = np.array([x1-x0, y1-y0, z1-z0])
+    ac = np.array([x2-x0, y2-y0, z2-z0])
+    cp = np.cross(ab, ac)  # normal vector
+    ax, ay, az = cp
+    # now we need c, so substitute in a known point
+    c = ax*x0 + ay*y0 + az*z0
+    assert abs(ax*x1 + ay*y1 + az*z1 - c) < 1e-9, "error in solving for plane"
+    assert abs(ax*x2 + ay*y2 + az*z2 - c) < 1e-9, "error in solving for plane"
+    return ax, ay, az, c
+
+
+def get_unit_sphere_midpoint_from_latlon(latlon0, latlon1, as_array=True):
+    xyz0 = unit_vector_latlon_to_cartesian(*latlon0)
+    xyz1 = unit_vector_latlon_to_cartesian(*latlon1)
+    xyz = get_unit_sphere_midpoint_from_xyz(xyz0, xyz1)
+    return unit_vector_cartesian_to_latlon(*xyz, as_array=as_array)
+
+
+def get_unit_sphere_midpoint_from_xyz(xyz0, xyz1, as_array=True):
+    # do it simple with basic math functions, no numpy casting or anything fancy, want fast
+    x0, y0, z0 = xyz0
+    x1, y1, z1 = xyz1
+    xm = (x0 + x1) / 2
+    ym = (y0 + y1) / 2
+    zm = (z0 + z1) / 2
+    m_raw = (xm, ym, zm)
+    mag = mag_3d_simple(m_raw)
+    m = (xm / mag, ym / mag, zm / mag)
+    assert abs(mag_3d_simple(m) - 1) < 1e-9
+    if as_array:
+        return np.array(m)
+    else:
+        return m
+
 
 # ---- UNSORTED STUFF BELOW ---- I have quarantined it so that I can draw on it if needed in icosalattice library, but won't be splitting files into part that lives in this repo and the rest that I don't need living in another file outside the repo ---- #
 
@@ -205,20 +262,6 @@ def get_radius_about_center_surface_point_for_circle_of_area_proportion_on_unit_
     # => r(proportion) = 2*sqrt(proportion)
     radius_from_center_in_3d = 2 * np.sqrt(area_sphere_proportion)
     return radius_from_center_in_3d
-
-
-def get_unit_sphere_midpoint_from_xyz(xyz0, xyz1):
-    # do it simple with basic math functions, no numpy casting or anything fancy, want fast
-    x0, y0, z0 = xyz0
-    x1, y1, z1 = xyz1
-    xm = (x0 + x1) / 2
-    ym = (y0 + y1) / 2
-    zm = (z0 + z1) / 2
-    m_raw = (xm, ym, zm)
-    mag = mag_3d_simple(m_raw)
-    m = (xm / mag, ym / mag, zm / mag)
-    assert abs(mag_3d_simple(m) - 1) < 1e-9
-    return m
 
     
 """

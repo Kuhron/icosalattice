@@ -54,6 +54,15 @@ class UnitSpherePoint:
     def latlonrad(self):
         tup = self.latlondeg()
         return tuple(x*np.pi/180 for x in tup)
+    
+    # @staticmethod
+    # def get_midpoint(p0, p1):
+    #     xyz0 = p0.get_coords("xyz")
+    #     xyz1 = p1.get_coords("xyz")
+    #     midpoint_normalized_xyz = mcm.get_unit_sphere_midpoint_from_xyz(xyz0, xyz1)
+    #     midpoint_normalized_latlon = mcm.unit_vector_cartesian_to_latlon(*midpoint_normalized_xyz, deg=True)
+    #     coords_dict = {"xyz": midpoint_normalized_xyz, "latlondeg": midpoint_normalized_latlon}
+    #     return UnitSpherePoint(coords_dict)
 
     # def latlon(self):
     #     raise Exception("please use .latlondeg() or .latlonrad()")
@@ -150,15 +159,6 @@ class UnitSpherePoint:
     #     # use for giving the point elevation, rainfall, etc.
     #     # and will make it easier to transfer data to another point, e.g. when snapping to lattice
     #     self.point_data[key] = value
-    
-    # @staticmethod
-    # def get_midpoint(p0, p1):
-    #     xyz0 = p0.get_coords("xyz")
-    #     xyz1 = p1.get_coords("xyz")
-    #     midpoint_normalized_xyz = mcm.get_unit_sphere_midpoint_from_xyz(xyz0, xyz1)
-    #     midpoint_normalized_latlon = mcm.unit_vector_cartesian_to_latlon(*midpoint_normalized_xyz, deg=True)
-    #     coords_dict = {"xyz": midpoint_normalized_xyz, "latlondeg": midpoint_normalized_latlon}
-    #     return UnitSpherePoint(coords_dict)
 
     # @staticmethod
     # def get_angle_radians_between(p0, p1):
@@ -179,28 +179,28 @@ class UnitSpherePoint:
     #     raise Exception("this is slow; remove as many calls to indexing on USP as possible")
     #     return hash(self.get_immutable())
 
-    # @staticmethod
-    # def get_random_unit_sphere_point():
-    #     a = np.random.normal(0,1,(3,))
-    #     a /= np.linalg.norm(a)
-    #     xyz = a
-    #     return UnitSpherePoint.from_xyz(*xyz)
+    @staticmethod
+    def get_random_unit_sphere_point():
+        a = np.random.normal(0,1,(3,))
+        a /= np.linalg.norm(a)
+        xyz = a
+        return UnitSpherePoint.from_xyz(*xyz)
 
-    # @staticmethod
-    # def from_xyz(x, y, z, point_number=None):
-    #     xyz = np.array([x, y, z])
-    #     latlondeg = mcm.unit_vector_cartesian_to_latlon(x, y, z, deg=True)
-    #     return UnitSpherePoint({"xyz":xyz, "latlondeg":latlondeg}, point_number=point_number)
+    @staticmethod
+    def from_xyz(x, y, z, point_number=None):
+        xyz = np.array([x, y, z])
+        latlondeg = mcm.unit_vector_cartesian_to_latlon(x, y, z, deg=True)
+        return UnitSpherePoint({"xyz":xyz, "latlondeg":latlondeg}, point_number=point_number)
 
-    # @staticmethod
-    # def from_latlondeg(lat, lon, point_number=None):
-    #     latlondeg = np.array([lat, lon])
-    #     xyz = mcm.unit_vector_latlon_to_cartesian(lat, lon, deg=True)
-    #     return UnitSpherePoint({"xyz":xyz, "latlondeg":latlondeg}, point_number=point_number)
+    @staticmethod
+    def from_latlondeg(lat, lon, point_number=None):
+        latlondeg = np.array([lat, lon])
+        xyz = mcm.unit_vector_latlon_to_cartesian(lat, lon, deg=True)
+        return UnitSpherePoint({"xyz":xyz, "latlondeg":latlondeg}, point_number=point_number)
 
-    # @staticmethod
-    # def random():
-    #     return UnitSpherePoint.get_random_unit_sphere_point()  # alias
+    @staticmethod
+    def random():
+        return UnitSpherePoint.get_random_unit_sphere_point()  # alias
 
     # @staticmethod
     # def random_within_latlon_box(n_points, min_lat, max_lat, min_lon, max_lon):

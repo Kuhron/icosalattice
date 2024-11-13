@@ -4,6 +4,7 @@
 import functools
 
 from icosalattice.BoxCornerMapping import correct_reversed_edge_polarity, point_code_is_in_reversed_polarity_encoding, reverse_edge_polarity
+import icosalattice.StartingPoints as sp
 
 
 NORTHERN_RING = ["C", "E", "G", "I", "K"]
@@ -297,7 +298,7 @@ def flip_bits(bits):
 def normalize_peel(point_code):
     head = point_code[0]
     tail = point_code[1:]
-    assert head in list("ABCDEFGHIJKL")
+    assert head in sp.STARTING_POINT_CODES
     if head in ["A", "B"]:
         assert len(head) == 1, f"got pole-child code, which should not happen: {point_code}"
         cd_code, peel_offset = point_code, 0

@@ -9,9 +9,11 @@ import math
 
 import icosalattice.IcosahedronMath as icm
 import icosalattice.MapCoordinateMath as mcm
+import icosalattice.StartingPoints as sp
 
 
-world = gpd.read_file("https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip")
+# world = gpd.read_file("https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip")
+world = gpd.read_file("/home/kuhron/programming/Mapping/ne_110m_admin_0_countries.zip")
 
 fig = plt.figure(figsize=(20, 10))
 ax = fig.add_subplot()
@@ -25,27 +27,11 @@ world.plot(
     alpha=0.5
 )
 
-# turn off axis ticks
-# ax.set_xticks([])
-# ax.set_yticks([])
-
-# plt.title("Basic Map of World with GeoPandas")
-
 # add extra points and labels
-label_to_latlon = {
-    "A": (90, 0),
-    "B": (-90, 0),
-    "C": (icm.RING_LAT_DEG, 0),
-    "D": (-icm.RING_LAT_DEG, 36),
-    "E": (icm.RING_LAT_DEG, 72),
-    "F": (-icm.RING_LAT_DEG, 108),
-    "G": (icm.RING_LAT_DEG, 144),
-    "H": (-icm.RING_LAT_DEG, 180),
-    "I": (icm.RING_LAT_DEG, -144),
-    "J": (-icm.RING_LAT_DEG, -108),
-    "K": (icm.RING_LAT_DEG, -72),
-    "L": (-icm.RING_LAT_DEG, -36),
-}
+starting_points, adj = sp.get_starting_points_immutable()
+labels = sp.STARTING_POINT_CODES
+label_to_latlon = {label: p.latlondeg() for label, p in zip(labels, starting_points)}
+
 
 # double check the distances make sense so I don't make the same mistake I did before by assuming the rings were at 30 degrees of latitude
 def d(a, b):
@@ -54,17 +40,6 @@ def d(a, b):
         s += (x-y)**2
     return s**0.5
 
-# letters = "ABCDEFGHIJKL"
-# ds = {letters[i]: {letters[j]: None for j in range(12)} for i in range(12)}
-# for i in range(12):
-#     for j in range(12):
-#         lli = label_to_latlon[letters[i]]
-#         llj = label_to_latlon[letters[j]]
-#         xyzi = mcm.unit_vector_latlon_to_cartesian(lli[0], lli[1], deg=True)
-#         xyzj = mcm.unit_vector_latlon_to_cartesian(llj[0], llj[1], deg=True)
-#         ds[letters[i]][letters[j]] = d(xyzi, xyzj)
-# df = (pd.DataFrame.from_dict(ds)*1000).round().astype(int)
-# print(df)
 
 for label, (lat, lon) in label_to_latlon.items():
     # https://stackoverflow.com/questions/54831344/matplotlib-plt-text-with-user-defined-circle-radii

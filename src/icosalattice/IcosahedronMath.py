@@ -4,23 +4,7 @@
 import math
 
 import icosalattice.PointCodeArithmetic as pca
-
-
-RING_LAT_DEG = math.atan(1/2) * 180/math.pi
-
-
-def get_starting_points_latlon_named():
-    icosahedron_original_points_latlon = {
-        # north pole
-        "NP": (90, 0),
-        # north ring of five points, star with a point at lon 0
-        "NR0": (RING_LAT_DEG, 0), "NRp72": (RING_LAT_DEG, 72), "NRp144": (RING_LAT_DEG, 144), "NRm72": (RING_LAT_DEG, -72), "NRm144": (RING_LAT_DEG, -144),
-        # south ring of five points, star with a point at lon 180
-        "SR180": (-RING_LAT_DEG, 180), "SRp108": (-RING_LAT_DEG, 108), "SRp36": (-RING_LAT_DEG, 36), "SRm108": (-RING_LAT_DEG, -108), "SRm36": (-RING_LAT_DEG, -36),
-        # south pole
-        "SP": (-90, 0),
-    }
-    return icosahedron_original_points_latlon
+import icosalattice.StartingPoints as sp
 
 
 def get_iteration_born_from_point_code(pc):
@@ -79,7 +63,7 @@ def get_point_number_from_point_code(point_code):
     if point_code is None:
         return None
     try:
-        return {pc:i for i,pc in enumerate("ABCDEFGHIJKL")}[point_code]
+        return {pc:i for i,pc in enumerate(sp.STARTING_POINT_CODES)}[point_code]
         # thought about doing "ABC...".index, but notice that "abc".index("bc") == 1
     except KeyError:
         pass
@@ -112,7 +96,7 @@ def get_point_code_from_point_number(pn):
     if pn is None:
         return None
     if pn < 12:
-        return "ABCDEFGHIJKL"[pn]
+        return sp.STARTING_POINT_CODES[pn]
 
     digit_dict = {}
     current_number = pn
@@ -121,7 +105,7 @@ def get_point_code_from_point_number(pn):
         iteration = get_iteration_born_from_point_number(current_number)
         digit_dict[iteration] = str(child_index + 1)
         current_number = get_parent_from_point_number(current_number)
-    pc = "ABCDEFGHIJKL"[current_number]
+    pc = sp.STARTING_POINT_CODES[current_number]
     iteration_born = get_iteration_born_from_point_number(pn)
     for i in range(1, iteration_born + 1):
         pc += digit_dict.get(i, "0")
@@ -289,7 +273,7 @@ def get_all_point_codes_in_order_up_to_iteration(iteration):
 
 def get_all_point_codes_in_order_up_to_iteration_with_trailing_zeros(iteration):
     if iteration == 0:
-        for c in list("ABCDEFGHIJKL"):
+        for c in sp.STARTING_POINT_CODES:
             yield c
     else:
         previous_points = get_all_point_codes_in_order_up_to_iteration_with_trailing_zeros(iteration - 1)
@@ -413,7 +397,7 @@ def verify_valid_point_codes(pcs):
 def verify_valid_point_code(pc):
     head = pc[0]
     tail = pc[1:]
-    assert head in list("ABCDEFGHIJKL"), head
+    assert head in sp.STARTING_POINT_CODES, head
     assert all(x in list("0123") for x in tail), tail
 
 
@@ -1593,7 +1577,7 @@ def narrow_watersheds_by_distance(pc, d, max_iterations, xyzg):
     # treat the poles each as a watershed consisting only of a single point
 
     print(f"narrowing watersheds within {d=} of {pc} up to {max_iterations} iterations of precision")
-    watersheds_to_check = list("ABCDEFGHIJKL")
+    watersheds_to_check = sp.STARTING_POINT_CODES
     inside = []
     outside = []
     split = []

@@ -5,6 +5,7 @@ from icosalattice.UnitSpherePoint import UnitSpherePoint
 
 
 MID_LAT_DEG = math.atan(1/2) * 180/math.pi
+STARTING_POINT_CODES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
 
 def get_starting_points_latlon_named():
