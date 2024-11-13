@@ -46,21 +46,32 @@ def get_directionality_of_face(face_name):
         raise ValueError("bad face name")
 
 
-def get_faces_of_point_by_plane_projection(p):
-    p_xyz = p.xyz(as_array=True)
-    # print(f"{p_xyz = }")
-
-    xp, yp, zp = p_xyz
-    chosen_faces = []
-    best_ratio = None
+def get_plane_parameters_of_faces():
+    # ax*x + ay*y + az*z = c
     face_name_to_xyzs = get_face_corner_coordinates_xyz()
+    d = {}
     for face_name, xyzs in face_name_to_xyzs.items():
         vertices = [x for x in xyzs if x is not None]
         ax, ay, az, c = mcm.get_plane_containing_three_points_3d(*vertices)
+        d[face_name] = (ax, ay, az, c)
+    return d
+
+
+def get_faces_of_point_by_plane_projection(p):
+    p_xyz = p.xyz(as_array=True)
+    xp, yp, zp = p_xyz
+    chosen_faces = []
+    best_ratio = None
+    plane_parameters_by_face = get_plane_parameters_of_faces()
+    for face_name in FACE_NAMES:
+        ax, ay, az, c = plane_parameters_by_face[face_name]
         c_of_p = ax*xp + ay*yp + az*zp
-        if c_of_p == 0:
-            warnings.warn(f"got {c_of_p = } with {p_xyz = }, {face_name = }")
-        ratio = c/c_of_p
+        
+        if abs(c_of_p) < 1e-9:
+            ratio = 1 if abs(c) < 1e-9 else float("inf") if c > 0 else -float("inf")
+        else:
+            ratio = c/c_of_p
+        
         if ratio < 0:
             # face is on the other side of the planet, ignore
             continue

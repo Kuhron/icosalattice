@@ -16,7 +16,7 @@ def test_face_of_point():
     faces = fc.get_face_names()
     starting_points, adj = sp.get_starting_points_immutable()
     labels = sp.STARTING_POINT_CODES
-    label_to_latlon = {label: p.latlondeg() for label, p in zip(labels, starting_points)}
+    # label_to_latlon = {label: p.latlondeg() for label, p in zip(labels, starting_points)}
 
     test_cases = {
         usp.UnitSpherePoint.from_latlondeg(1, 104): ["GXEF"],
