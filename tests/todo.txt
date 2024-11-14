@@ -1,2 +1,6 @@
 tests to make
-- 
+- peel coordinate conversion to/from xyz
+- point code to/from xyz via peel coordinates should match point code to/from xyz via ancestry
+
+questions
+- are segments (path between neighboring points in the 1/2/3 directions) the same length at a given iteration? I feel like this can't be true, or it can't be true while it's also true that the segments within an iteration are equidistant on the plane onto which the points are projected for finding peel coordinates. There must be distortion somewhere because the middle of the plane is bowed upward more to get to the surface of the sphere than the areas near the face's edges are, so there must be more dilation in that part of the face. Test lengths of segments throughout a face on both the sphere surface and the projected plane of the face (the one defined by the face's three corners). If somehow these are both true, then there must be angle distortion. But I consider it high burden of proof that they're both true. Need to look at this analytically and/or empirically.

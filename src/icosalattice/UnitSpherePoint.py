@@ -42,14 +42,18 @@ class UnitSpherePoint:
         if as_array:
             return np.array(xyz)
         else:
-            return xyz
+            # avoid np types
+            x,y,z = xyz
+            return (float(x), float(y), float(z))
 
     def latlondeg(self, as_array=False):
         latlon = self.tuples["latlondeg"]
         if as_array:
             return np.array(latlon)
         else:
-            return latlon
+            # avoid np types
+            lat, lon = latlon
+            return (float(lat), float(lon))
 
     def latlonrad(self):
         tup = self.latlondeg()

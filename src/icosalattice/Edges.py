@@ -4,13 +4,15 @@ import icosalattice.StartingPoints as sp
 from icosalattice.UnitSpherePoint import UnitSpherePoint
 
 
+MID_ARC_LAT = np.arctan((1+5**0.5)/2 -1) * 180/np.pi  # where the edge CE peaks in latitude
+
 
 def get_edge_midpoints():
     ring_lat = sp.MID_LAT_DEG
-    high_mid_arc = np.arctan((1+5**0.5)/2 -1) * 180/np.pi  # where the edge CE peaks in latitude
+    high_mid_arc = MID_ARC_LAT
     high_mid = 1/2 * (90 + ring_lat)
     low_mid = -high_mid
-    low_mid_arc = -high_mid_arc
+    low_mid_arc = -MID_ARC_LAT
 
     midpoints_latlon = {
         "AC": (high_mid, 0),
