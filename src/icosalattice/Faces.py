@@ -22,7 +22,7 @@ def get_face_names():
 
 
 def get_face_corner_coordinates_xyz(as_array=False):
-    starting_points, adj = sp.get_starting_points_immutable()
+    starting_points, adj = sp.STARTING_POINTS
     labels = sp.STARTING_POINT_CODES
     label_to_xyz = {label: p.xyz(as_array=as_array) for label, p in zip(labels, starting_points)}
     face_name_to_xyzs = {}

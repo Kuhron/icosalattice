@@ -2,6 +2,7 @@ import math
 
 import icosalattice.MapCoordinateMath as mcm
 from icosalattice.UnitSpherePoint import UnitSpherePoint
+from icosalattice.ConstantMakerDecorator import constant_maker
 
 
 # constants that can be defined before functions
@@ -113,6 +114,7 @@ def get_starting_points():
     return ordered_points, adjacencies_by_point_index
 
 
+@constant_maker("STARTING_POINTS")
 def get_starting_points_immutable():
     ordered_points, adj = get_starting_points()
     assert type(ordered_points) is list
@@ -161,6 +163,7 @@ def get_starting_point_ring(starting_point):
         raise ValueError("invalid ring code {}".format(ring_code))
 
 
+@constant_maker("STARTING_DIRECTIONAL_DICT")
 def get_starting_point_code_directional_dict():
     # this will help with finding the directional parent for a given point code
     # A and B don't have directions (L,DL,D = 1,2,3) coming from them
@@ -179,6 +182,6 @@ def get_starting_point_code_directional_dict():
 
 
 # constants that need to be defined after the function that creates them
-STARTING_POINTS = get_starting_points_immutable()  # since this is called way too many times otherwise, just initialize it as a global constant that can be accessed by further functions, e.g. base case for recursive adjacency algorithm
+STARTING_POINTS = get_starting_points_immutable(calling_to_create_constant=True)  # since this is called way too many times otherwise, just initialize it as a global constant that can be accessed by further functions, e.g. base case for recursive adjacency algorithm
 STARTING_POINTS_ORDERED, STARTING_POINTS_ADJACENCY = STARTING_POINTS
-STARTING_DIRECTIONAL_DICT = get_starting_point_code_directional_dict()
+STARTING_DIRECTIONAL_DICT = get_starting_point_code_directional_dict(calling_to_create_constant=True)

@@ -11,7 +11,7 @@ import icosalattice.Edges as ed
 
 
 faces = fc.get_face_names()
-starting_points, adj = sp.get_starting_points_immutable()
+starting_points, adj = sp.STARTING_POINTS
 edge_midpoints = ed.get_edge_midpoints()
 labels = sp.STARTING_POINT_CODES
 label_to_latlon = {label: p.latlondeg() for label, p in zip(labels, starting_points)}
