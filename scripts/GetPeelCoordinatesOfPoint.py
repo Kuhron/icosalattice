@@ -105,23 +105,39 @@ def get_peel_coordinates_of_point(p):
             elif all("B" in x for x in fs):
                 return "B", 0, 0
             else:
-                s = set(fs[0]) - {"X"}
-                for f in fs[1:]:
-                    s &= set(f)
+                s = get_vertices_in_common_to_faces(fs)
                 assert len(s) == 1, s
                 starting_pc ,= s
                 return starting_pc, 0, 0
-        elif False:
-            raise  # TODO edge point in 1 direction
-        elif False:
-            raise  # TODO edge point in 3 direction
-        elif False:
-            raise  # TODO edge point in 2 direction, verify from both faces give same result
+        elif len(fs) == 2:
+            s = get_vertices_in_common_to_faces(fs)
+            spc, direction = ed.get_ancestor_starting_point_and_direction_of_edge(s)
+            print(spc, direction)
+
+            if direction == "1":
+                # TODO move the code for getting the peel coordinates on the projected plane into a function
+                # reduce repetition of the code in the on-face case above
+                # get peel coordinates on up-pointing face radiating from ancestor point
+                raise NotImplementedError
+            elif direction == "3":
+                # get peel coordinates on down-pointing face radiating from ancestor point
+                raise NotImplementedError
+            elif direction == "2":
+                # edge point in the 2 direction, so it borders both the up-pointing and down-pointing faces
+                # verify that getting coords from both faces give same result
+                raise NotImplementedError
+            else:
+                raise ValueError(f"bad direction {direction}")
+
         else:
-            print(Exception(f"unknown condition from faces {fs}"))
-        
-        # return NotImplemented, NotImplemented, NotImplemented
-        raise NotImplementedError("multiple faces")
+            print(Exception(f"bad number of faces bordering point: {fs}"))
+
+
+def get_vertices_in_common_to_faces(fs):
+    s = set(fs[0]) - {"X"}
+    for f in fs[1:]:
+        s &= set(f)
+    return s
 
 
 def get_point_code_from_peel_coordinates(starting_pc, l_coord, d_coord, max_iterations=15):
@@ -192,9 +208,7 @@ while True:
     elif random.random() < 0.5:
         p = random.choice(starting_points)
     else:
-        print("TODO test with points along edges\n")
-        continue
-        # p = random.choice(list(edge_midpoints.values()))
+        p = random.choice(list(edge_midpoints.values()))
     
     spc, l, d = get_peel_coordinates_of_point(p)
     pc = get_point_code_from_peel_coordinates(spc, l, d)

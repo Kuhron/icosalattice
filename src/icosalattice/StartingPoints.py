@@ -4,6 +4,7 @@ import icosalattice.MapCoordinateMath as mcm
 from icosalattice.UnitSpherePoint import UnitSpherePoint
 
 
+# constants that can be defined before functions
 MID_LAT_DEG = math.atan(1/2) * 180/math.pi
 STARTING_POINT_CODES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
@@ -180,3 +181,4 @@ def get_starting_point_code_directional_dict():
 # constants that need to be defined after the function that creates them
 STARTING_POINTS = get_starting_points_immutable()  # since this is called way too many times otherwise, just initialize it as a global constant that can be accessed by further functions, e.g. base case for recursive adjacency algorithm
 STARTING_POINTS_ORDERED, STARTING_POINTS_ADJACENCY = STARTING_POINTS
+STARTING_DIRECTIONAL_DICT = get_starting_point_code_directional_dict()

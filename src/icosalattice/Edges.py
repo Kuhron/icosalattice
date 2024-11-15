@@ -47,3 +47,29 @@ def get_edge_midpoints():
         "LC": (0, -18),
     }
     return {k: UnitSpherePoint.from_latlondeg(*v) for k,v in midpoints_latlon.items()}
+
+
+def get_ancestor_starting_point_and_direction_of_edge(endpoint_codes):
+    d = sp.STARTING_DIRECTIONAL_DICT
+    a,b = endpoint_codes
+    ab = None
+    ba = None
+    if a in d:
+        for direction, pc in d[a].items():
+            if pc == b:
+                ab = direction
+    if b in d:
+        for direction, pc in d[b].items():
+            if pc == a:
+                ba = direction
+
+    assert (ab is not None) + (ba is not None) == 1, f"should have exactly one direction of edge {endpoint_codes} in starting dict"
+    if ab is not None:
+        spc = a
+        direction = ab
+    elif ba is not None:
+        spc = b
+        direction = ba
+    else:
+        raise Exception("impossible")
+    return spc, direction
