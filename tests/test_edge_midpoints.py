@@ -8,7 +8,7 @@ from icosalattice.Edges import get_edge_midpoints
 
 
 def test_edge_midpoints():
-    starting_points, adj = sp.get_starting_points_immutable()
+    starting_points, adj = sp.STARTING_POINTS_AND_ADJACENCY
     labels = sp.STARTING_POINT_CODES
     label_to_latlon = {label: p.latlondeg() for label, p in zip(labels, starting_points)}
 

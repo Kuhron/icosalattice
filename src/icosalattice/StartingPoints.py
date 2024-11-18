@@ -182,6 +182,6 @@ def get_starting_point_code_directional_dict():
 
 
 # constants that need to be defined after the function that creates them
-STARTING_POINTS = get_starting_points_immutable(calling_to_create_constant=True)  # since this is called way too many times otherwise, just initialize it as a global constant that can be accessed by further functions, e.g. base case for recursive adjacency algorithm
-STARTING_POINTS_ORDERED, STARTING_POINTS_ADJACENCY = STARTING_POINTS
+STARTING_POINTS_AND_ADJACENCY = get_starting_points_immutable(calling_to_create_constant=True)  # since this is called way too many times otherwise, just initialize it as a global constant that can be accessed by further functions, e.g. base case for recursive adjacency algorithm
+STARTING_POINTS, STARTING_ADJACENCY = STARTING_POINTS_AND_ADJACENCY
 STARTING_DIRECTIONAL_DICT = get_starting_point_code_directional_dict(calling_to_create_constant=True)

@@ -9,7 +9,7 @@ import icosalattice.Faces as fc
 
 
 def test_face_areas():
-    starting_points, adj = sp.get_starting_points_immutable()
+    starting_points, adj = sp.STARTING_POINTS_AND_ADJACENCY
     labels = sp.STARTING_POINT_CODES
     
     face_name_to_xyzs = fc.get_face_corner_coordinates_xyz()

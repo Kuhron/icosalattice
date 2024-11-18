@@ -515,22 +515,6 @@ def get_starting_points():
     return ordered_points, adjacencies_by_point_index
 
 
-def get_starting_points_immutable():
-    ordered_points, adj = get_starting_points()
-    assert type(ordered_points) is list
-    assert all(type(x) is UnitSpherePoint for x in ordered_points)
-    ordered_points = tuple(ordered_points)
-    assert type(adj) is list
-    new_adj = ()
-    for x in adj:
-        assert type(x) is list
-        assert all(type(y) is int for y in x)
-        x_tup = tuple(x)
-        extend_tup = (x_tup,)
-        new_adj = new_adj + extend_tup
-    return (ordered_points, new_adj)
-
-
 def get_starting_point_neighbor_identity(point_number):
     # for 0 and 1 (the poles) this is still weird, it's not clear what the directions (L,DL,D,R,UR,U) would mean for them, ill-defined like east of the south pole
     # but for the other 10 starting points, there are five neighbors but one of them acts like two directions
@@ -2016,12 +2000,6 @@ def test_lookup_number_conversion():
     #     print(pns[i], lns[i])
     plt.scatter(pns, lns)
     plt.show()
-
-
-
-# constants that need to be defined after the function that creates them
-STARTING_POINTS = get_starting_points_immutable()  # since this is called way too many times otherwise, just initialize it as a global constant that can be accessed by further functions, e.g. base case for recursive adjacency algorithm
-STARTING_POINTS_ORDERED, STARTING_POINTS_ADJACENCY = STARTING_POINTS
 
 
 if __name__ == "__main__":

@@ -28,7 +28,7 @@ world.plot(
 )
 
 # add extra points and labels
-starting_points, adj = sp.STARTING_POINTS
+starting_points, adj = sp.STARTING_POINTS_AND_ADJACENCY
 labels = sp.STARTING_POINT_CODES
 label_to_latlon = {label: p.latlondeg() for label, p in zip(labels, starting_points)}
 

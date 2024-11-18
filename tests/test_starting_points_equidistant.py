@@ -5,7 +5,7 @@ import icosalattice.MapCoordinateMath as mcm
 
 
 def test_starting_points_equidistant():
-    points, adjacencies = sp.get_starting_points_immutable()    
+    points, adjacencies = sp.STARTING_POINTS_AND_ADJACENCY
     distances = set()
     for i, p in enumerate(points):
         neighbors = [points[j] for j in adjacencies[i]]
