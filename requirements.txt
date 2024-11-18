@@ -9,6 +9,7 @@ geopandas==1.0.1
 iniconfig==2.0.0
 kiwisolver==1.4.7
 matplotlib==3.9.2
+nodeenv==1.9.1
 numpy==2.1.2
 packaging==24.1
 pandas==2.2.3

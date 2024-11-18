@@ -1,4 +1,4 @@
--e git+ssh.*
+-e git\+ssh.*
 pyright==.*
 typing_extensions==.*
 pytest==.*
