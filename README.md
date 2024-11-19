@@ -1,6 +1,9 @@
 # icosalattice
 This is a Python library which implements a lattice on the sphere (by this I mean the 2-sphere, which is the surface of a 3D sphere). The lattice is based on subdividing the edges and faces of an icosahedron to arbitrary precision.
 
+### PyPI project page
+https://pypi.org/project/icosalattice/
+
 ## What does it do? / What is it for?
 The lattice provides a coordinate system for specifying points on the sphere. It is different from either 3D Cartesian coordinates or spherical coordinates. 
 
