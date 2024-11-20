@@ -72,6 +72,8 @@ while True:
     pc = icm.get_point_code_from_peel_coordinates(spc, l, d)
     ll = p.latlondeg(as_array=False)
     fs = fc.get_faces_of_point_by_closest_center(p)
-    print(f"latlon {ll}\nis at peel coords L={l}, D={d} from point {spc}\ngot point code {pc} for this point")
+    pc_bin = point_code_to_binary(pc)
+    assert binary_to_point_code(pc_bin) == pc
+    print(f"latlon {ll}\nis at peel coords L={l}, D={d} from point {spc}\ngot point code {pc}, binary {pc_bin}")
     input("check")
     print()
