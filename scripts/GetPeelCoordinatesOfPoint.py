@@ -12,20 +12,7 @@ from icosalattice.PointRepresentationAsFloat import point_code_to_float, point_f
 import icosalattice.PeelCoordinates as pe
 
 
-faces = fc.get_face_names()
-starting_points = sp.STARTING_POINTS
 edge_midpoints = ed.get_edge_midpoints()
-labels = sp.STARTING_POINT_CODES
-label_to_latlon = {label: p.latlondeg() for label, p in zip(labels, starting_points)}
-
-
-# optimizations I could make (but don't do it prematurely!)
-# - for the vector composition stuff for getting peel coordinates from xyz and vice versa
-# - - could be good to keep all the relevant displacement vectors as constants in one of the modules (maybe Edges)
-# - - and ideally have their values analytically determined and specified like how MID_LAT_DEG is known from trig
-# - - then can just look them up without recalculating them
-# - rewrite the matrix equation code as more direct expressions for a1/a2/a3 rather than inverting a matrix (just write the inverse yourself)
-# - - so that the math is done more directly with basic arithmetic operations in raw Python rather than NumPy
 
 
 while True:
@@ -37,7 +24,7 @@ while True:
     elif random.random() < 1/2:
         i = random.randrange(len(sp.STARTING_POINT_CODES))
         pc_orig = sp.STARTING_POINT_CODES[i]
-        p = starting_points[i]
+        p = sp.STARTING_POINTS[i]
         print(f"starting point {pc_orig}")
     else:
         edge_name, p = random.choice(list(edge_midpoints.items()))

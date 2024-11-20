@@ -110,13 +110,6 @@ EARTH_RADIUS_KM = 6371
 CADA_II_RADIUS_FACTOR = 2.116
 CADA_II_RADIUS_KM = CADA_II_RADIUS_FACTOR * EARTH_RADIUS_KM
 
-# for converting between {point code, number array, lookup number}
-LETTER_TO_NUMBER_DICT = {c:i for i,c in enumerate("CDEFGHIJKL")}
-LETTER_TO_NUMBER_DICT["A"] = -2
-LETTER_TO_NUMBER_DICT["B"] = -3
-NUMBER_TO_LETTER_DICT = {i:c for c,i in LETTER_TO_NUMBER_DICT.items()}
-INITIAL_POINT_LOOKUP_NUMBERS = [-2, -3, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-
 
 
 # @functools.lru_cache(maxsize=100000)
@@ -185,6 +178,26 @@ def get_point_number_from_lookup_number(ln):
         return pn
 
 
+def get_xyz_from_point_code_using_lookup_number(pc, xyzg=None):
+    ln = get_prefix_lookup_number_from_point_code(pc)
+    return get_xyz_from_lookup_number(ln, xyzg)
+
+
+def get_xyz_from_lookup_number(ln, xyzg=None):
+    # print(f"{ln=}")
+    if xyzg is None:
+        if ln in INITIAL_POINT_LOOKUP_NUMBERS:
+            pn = get_point_number_from_lookup_number(ln)
+            return get_xyz_from_point_number(pn)
+        else:
+            pc = get_point_code_from_prefix_lookup_number(ln)
+            xyz = get_xyz_from_point_code_recursive(pc)
+    else:
+        xyz = xyzg[ln]
+
+    return xyz
+
+
 def get_point_codes_from_point_numbers(pns):
     print(f"getting point codes for {len(pns)} point numbers")
     pcs = [get_point_code_from_point_number(pn) for pn in pns]
@@ -247,26 +260,6 @@ def get_xyz_from_point_number(pn):
     if pn < 12:
         return get_xyz_of_initial_point_number(pn)
     xyz = get_xyz_from_point_number_recursive(pn)
-    return xyz
-
-
-def get_xyz_from_point_code(pc, xyzg=None):
-    ln = get_prefix_lookup_number_from_point_code(pc)
-    return get_xyz_from_lookup_number(ln, xyzg)
-
-
-def get_xyz_from_lookup_number(ln, xyzg):
-    # print(f"{ln=}")
-    if xyzg is None:
-        if ln in INITIAL_POINT_LOOKUP_NUMBERS:
-            pn = get_point_number_from_lookup_number(ln)
-            return get_xyz_from_point_number(pn)
-        else:
-            pc = get_point_code_from_prefix_lookup_number(ln)
-            xyz = get_xyz_from_point_code_recursive(pc)
-    else:
-        xyz = xyzg[ln]
-
     return xyz
 
 
@@ -659,31 +652,6 @@ def get_parent_from_point_number(point_number):
     return point_number // 3 - get_3adder_for_iteration(get_iteration_born_from_point_number(point_number))
 
 
-def get_parents_from_point_code(pc):
-    if len(pc) == 1:
-        par = None
-        dpar = None
-    elif pc[-1] == "0":
-        par = pc[:-1]
-        dpar = pc[:-1]
-    else:
-        adj = get_adjacency_from_point_code(pc)
-        ci = get_child_index_from_point_code(pc)
-        par = adj[3+ci]
-        dpar = adj[ci]
-        assert par[-1] == "0", par
-        assert dpar[-1] == "0", dpar
-        par = par[:-1]
-        dpar = dpar[:-1]
-    # print(f"parents of {pc} are {par=}, {dpar=}")
-    return [par, dpar]
-
-    # old way
-    # p0 = get_parent_from_point_code(pc)
-    # p1 = get_directional_parent_from_point_code(pc)
-    # return [p0, p1]
-
-
 def get_parents_from_point_number(point_number):
     pc = get_point_code_from_point_number(point_number)
     return get_parent_from_point_code(pc)
@@ -875,15 +843,6 @@ def get_child_index_from_point_number(pn):
     return pn % 3
 
 
-def get_parent_xyzs_from_point_code(pc):
-    # print(f"getting parent xyzs for {pc=}")
-    p0, p1 = get_parents_from_point_code(pc)
-    xyz0 = get_xyz_from_point_code(p0)
-    xyz1 = get_xyz_from_point_code(p1)
-    # print(f"\n{pc=} has parents {p0} with {xyz0=} and {p1} with {xyz1=}")
-    return xyz0, xyz1
-
-
 def get_parent_xyzs_from_point_number(pn):
     assert pn >= 12, "should get latlon/xyz of initial point directly"
     p0, p1 = get_parents_from_point_number(pn)
@@ -898,36 +857,10 @@ def get_xyz_of_initial_point_number(pn):
     return pos[pn].xyz()
 
 
-def get_xyz_of_initial_point_code(pc):
-    pn = get_point_number_from_point_code(pc)
-    return get_xyz_of_initial_point_number(pn)
-
-
-def get_xyz_of_point_code_using_parents(pc):
-    assert len(pc) > 1, "should get latlon/xyz of initial point directly"
-    xyz0, xyz1 = get_parent_xyzs_from_point_code(pc)
-    return get_xyz_of_child_from_parent_xyzs(xyz0, xyz1)
-
-
 def get_xyz_of_point_number_using_parents(pn):
     assert pn >= 12, "should get latlon/xyz of initial point directly"
     xyz0, xyz1 = get_parent_xyzs_from_point_number(pn)
     return get_xyz_of_child_from_parent_xyzs(xyz0, xyz1)
-
-
-def get_xyz_of_child_from_parent_xyzs(xyz0, xyz1):
-    # reduce use of UnitSpherePoint objects where they are unnecessary
-    # also reduce use of latlon and conversion to/from it where it is unnecessary
-    res = mcm.get_unit_sphere_midpoint_from_xyz(xyz0, xyz1)
-    # print(f"midpoint of\n{xyz0=} and\n{xyz1} is\n{res}")
-    return res
-
-
-# @functools.lru_cache(maxsize=100000)
-def get_xyz_from_point_code_recursive(pc):
-    assert len(pc) > 1, "should get latlon/xyz of initial point directly"
-    res = get_xyz_of_point_code_using_parents(pc)
-    return res
 
 
 # @functools.lru_cache(maxsize=100000)

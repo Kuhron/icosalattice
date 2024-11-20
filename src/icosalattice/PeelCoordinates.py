@@ -1,3 +1,11 @@
+# peel coordinates are within the shape formed by combining this face and its up-facing or down/facing counterpart
+# and shearing those such that it's a square with the 0 point (C,D,E,F,G,H,I,J,K,L) on the upper right
+# the 1 direction going left, the 2 direction going down-left, and the 3 direction going down
+# so each peel has a north and a south square, each the parental watershed of one of the 10 mid-latitude starting points
+# within this square, measure how far left we go and how far down we go (each in interval from 0 to 1)
+# from this we can get the point code directly
+
+
 from icosalattice.UnitSpherePoint import UnitSpherePoint
 import icosalattice.MathUtil as mu
 import icosalattice.StartingPoints as sp
@@ -6,6 +14,12 @@ import icosalattice.Edges as ed
 import icosalattice.MapCoordinateMath as mcm
 import numpy as np
 
+
+# potential optimizations, if needed:
+# - for the vector composition stuff for getting peel coordinates from xyz and vice versa
+# - - could be good to keep all the relevant displacement vectors as constants in one of the modules (maybe Edges)
+# - - and ideally have their values analytically determined and specified like how MID_LAT_DEG is known from trig
+# - - then can just look them up without recalculating them
 
 
 def get_peel_coordinates_of_point(p: UnitSpherePoint):
@@ -132,12 +146,6 @@ def get_xyz_from_peel_coordinates_on_downward_face(vertices_xyz, l_coord, d_coor
 
 
 def get_peel_coordinates_from_xyz(xyz):
-    # peel coordinates are within the shape formed by combining this face and its up-facing or down/facing counterpart
-    # and shearing those such that it's a square with the 0 point (C,D,E,F,G,H,I,J,K,L) on the upper right
-    # the 1 direction going left, the 2 direction going down-left, and the 3 direction going down
-    # so each peel has a north and a south square, each the parental watershed of one of the 10 mid-latitude starting points
-    # within this square, measure how far left we go and how far down we go (each in interval from 0 to 1)
-    # from this we should be able to get the point code directly, I hope?
     fs = fc.get_faces_of_xyz_by_closest_center(xyz)
 
     if len(fs) == 1:
@@ -207,6 +215,15 @@ def get_point_code_from_xyz_using_peel_coordinates(xyz):
     pc = get_point_code_from_peel_coordinates(spc, l, d)
     return pc
 
+
+def get_latlon_from_point_code_using_peel_coordinates(pc, deg=True, as_array=True):
+    xyz = get_xyz_from_point_code_using_peel_coordinates(pc)
+    return mcm.unit_vector_cartesian_to_latlon(*xyz, deg=deg, as_array=as_array)
+
+
+def get_point_code_from_latlon_using_peel_coordinates(latlon, deg=True, as_array=True):
+    xyz = mcm.unit_vector_latlon_to_cartesian(*latlon, deg=deg, as_array=as_array)
+    return get_point_code_from_xyz_using_peel_coordinates(xyz)
 
 
 def get_peel_coordinates_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, xyz3):

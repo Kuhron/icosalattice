@@ -36,6 +36,10 @@ def round_off_unwanted_float_precision(x):
 
 
 def get_vector_decomposition_coefficients(v, v1, v2):
+    # potential optimizations, if needed:
+    # - rewrite the matrix equation code as more direct expressions for a1/a2/a3 rather than inverting a matrix (just write the inverse yourself)
+    # - - so that the math is done more directly with basic arithmetic operations in raw Python rather than NumPy
+
     # v = a1*v1 + a2*v2, solve for a1 and a2
     x1, y1, z1 = v1
     x2, y2, z2 = v2
