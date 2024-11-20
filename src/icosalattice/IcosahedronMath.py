@@ -4,6 +4,7 @@
 # keep info about Icosa coordinates in files, look things up in tables, rather than keeping it all in RAM
 
 import math
+import random
 import numpy as np
 
 import icosalattice.PointCodeArithmetic as pca
@@ -40,7 +41,6 @@ def get_peel_coordinates_of_point(p):
     p_xyz = p.xyz(as_array=True)
 
     fs = fc.get_faces_of_point_by_closest_center(p)
-    assert 1 <= len(fs) <= 5, f"got {len(fs)} faces for point, which should be impossible; {p = }"
 
     if len(fs) == 1:
         face ,= fs
@@ -91,7 +91,7 @@ def get_peel_coordinates_of_point(p):
             else:
                 raise ValueError(f"bad direction {direction}")
         else:
-            print(Exception(f"bad number of faces bordering point: {fs}"))
+            raise Exception(f"bad number of faces bordering point: {fs}")
 
     l_coord = round_off_unwanted_float_precision(l_coord)
     d_coord = round_off_unwanted_float_precision(d_coord)
@@ -228,6 +228,99 @@ def get_point_code_from_peel_coordinates(starting_pc, l_coord, d_coord, max_iter
     while s[-1] == "0":
         s = s[:-1]
     return s
+
+
+def get_peel_coordinates_from_point_code(pc):
+    spc = pc[0]
+    l_coord = 0
+    d_coord = 0
+    c_to_bits = {
+        "0": (0, 0), "1": (1, 0),
+        "3": (0, 1), "2": (1, 1),
+    }
+    for i, c in enumerate(pc[1:]):
+        denom = 2**(i+1)
+        l_bit, d_bit = c_to_bits[c]
+        l_coord += l_bit/denom
+        d_coord += d_bit/denom
+    return spc, l_coord, d_coord
+
+
+def get_xyz_from_peel_coordinates(starting_pc, l_coord, d_coord):
+    raise NotImplementedError
+
+
+def get_peel_coordinates_from_xyz(xyz):
+    # TODO move relevant stuff from get_peel_coordinates_of_point() to here
+    raise NotImplementedError
+
+
+def get_xyz_from_point_code_using_peel_coordinates(pc):
+    spc, l, d = get_peel_coordinates_from_point_code(pc)
+    xyz = get_xyz_from_peel_coordinates(spc, l, d)
+    return xyz
+
+
+def get_point_code_from_xyz_using_peel_coordinates(xyz):
+    spc, l, d = get_peel_coordinates_from_xyz(xyz)
+    pc = get_point_code_from_peel_coordinates(spc, l, d)
+    return pc
+
+
+def get_random_point_code(min_iterations, expected_iterations, max_iterations, prefix=""):
+    assert min_iterations <= expected_iterations <= max_iterations
+    
+    if len(prefix) == 0:
+        # start the string off with the minimum iterations needed
+        s = random.choice("CDEFGHIJKL")
+    else:
+        assert prefix[0] in "CDEFGHIJKL"
+        s = prefix
+
+    for i in range(min_iterations - len(s)):  # if negative, loop won't run (won't error)
+        s += random.choice("0123")
+    backup_digit = random.choice("123")  # prevent trailing zeros from taking s back below min_iterations
+
+    iterations_used = get_iteration_number_from_point_code(s)
+    if iterations_used < expected_iterations:
+        while True:
+            s += random.choice("0123")
+            iterations_used = get_iteration_number_from_point_code(s)
+            if iterations_used >= max_iterations:
+                break
+            if random.random() < 1/(expected_iterations - min_iterations):
+                break
+
+    # based on the number of points in this iteration, maybe replace with one of the poles
+    iterations_used = get_iteration_number_from_point_code(s)
+    n_points_this_iteration = get_n_points_from_iterations(iterations_used)
+    prob_of_pole = 2 / n_points_this_iteration
+    if min_iterations == 0 and random.random() < prob_of_pole:
+        return random.choice(["A", "B"])
+    
+    iteration_born = get_iteration_born_from_point_code(pca.strip_trailing_zeros(s))
+    if iteration_born < min_iterations:
+        # replace the last zero with backup_digit
+        s = s[:-1] + backup_digit
+    else:
+        s = pca.strip_trailing_zeros(s)
+
+    return s
+
+
+def get_n_points_from_iterations(n):
+    assert type(n) is int
+    return get_exact_n_points_from_iterations(n)
+
+
+def get_exact_n_points_from_iterations(n_iters):
+    return 2 + 10 * (4 ** n_iters)
+
+
+def get_exact_iterations_from_n_points(n_points):
+    return np.log((n_points - 2)/10) / np.log(4)  # just use change of base since np.log(arr, b) doesn't like arrays
+
+
 
 
 # ---- UNSORTED STUFF BELOW ---- I have quarantined it so that I can draw on it if needed in icosalattice library, but won't be splitting files into part that lives in this repo and the rest that I don't need living in another file outside the repo ---- #
@@ -505,47 +598,6 @@ def get_all_point_codes_in_iteration(iteration):
             yield pc
 
 
-def get_random_point_code(min_iterations, expected_iterations, max_iterations, prefix=""):
-    assert min_iterations <= expected_iterations <= max_iterations
-    
-    if len(prefix) == 0:
-        # start the string off with the minimum iterations needed
-        s = random.choice("CDEFGHIJKL")
-    else:
-        assert prefix[0] in "CDEFGHIJKL"
-        s = prefix
-
-    for i in range(min_iterations - len(s)):  # if negative, loop won't run (won't error)
-        s += random.choice("0123")
-    backup_digit = random.choice("123")  # prevent trailing zeros from taking s back below min_iterations
-
-    iterations_used = get_iteration_number_from_point_code(s)
-    if iterations_used < expected_iterations:
-        while True:
-            s += random.choice("0123")
-            iterations_used = get_iteration_number_from_point_code(s)
-            if iterations_used >= max_iterations:
-                break
-            if random.random() < 1/(expected_iterations - min_iterations):
-                break
-
-    # based on the number of points in this iteration, maybe replace with one of the poles
-    iterations_used = get_iteration_number_from_point_code(s)
-    n_points_this_iteration = get_n_points_from_iterations(iterations_used)
-    prob_of_pole = 2 / n_points_this_iteration
-    if min_iterations == 0 and random.random() < prob_of_pole:
-        return random.choice(["A", "B"])
-    
-    iteration_born = get_iteration_born_from_point_code(strip_trailing_zeros(s))
-    if iteration_born < min_iterations:
-        # replace the last zero with backup_digit
-        s = s[:-1] + backup_digit
-    else:
-        s = strip_trailing_zeros(s)
-
-    return s
-
-
 def get_random_point_number(min_iterations, expected_iterations, max_iterations):
     pc = get_random_point_code(min_iterations, expected_iterations, max_iterations)
     pn = get_point_number_from_point_code(pc)
@@ -560,19 +612,6 @@ def get_iterations_from_n_points(n):
         iterations = get_exact_iterations_from_n_points(n)
         assert iterations % 1 == 0, "number of points {} gave non-int number of iterations; make sure it is 2+10*(4**n)".format(n)
         return iterations
-
-
-def get_n_points_from_iterations(n):
-    assert type(n) is int
-    return get_exact_n_points_from_iterations(n)
-
-
-def get_exact_n_points_from_iterations(n_iters):
-    return 2 + 10 * (4 ** n_iters)
-
-
-def get_exact_iterations_from_n_points(n_points):
-    return np.log((n_points - 2)/10) / np.log(4)  # just use change of base since np.log(arr, b) doesn't like arrays
 
 
 def get_iterations_needed_for_point_number(point_number):

@@ -8,6 +8,7 @@ import icosalattice.StartingPoints as sp
 from icosalattice.UnitSpherePoint import UnitSpherePoint
 import icosalattice.Faces as fc
 import icosalattice.Edges as ed
+from icosalattice.PointRepresentationAsFloat import point_code_to_float, point_float_to_code
 
 
 faces = fc.get_face_names()
@@ -15,33 +16,6 @@ starting_points = sp.STARTING_POINTS
 edge_midpoints = ed.get_edge_midpoints()
 labels = sp.STARTING_POINT_CODES
 label_to_latlon = {label: p.latlondeg() for label, p in zip(labels, starting_points)}
-
-
-
-def get_peel_coordinates_from_point_code(pc):
-    raise NotImplementedError
-
-
-def get_xyz_from_peel_coordinates(starting_pc, l_coord, d_coord):
-    raise NotImplementedError
-
-
-def get_peel_coordinates_from_xyz(xyz):
-    # TODO move relevant stuff from get_peel_coordinates_of_point() to here
-    raise NotImplementedError
-
-
-def get_xyz_from_point_code_using_peel_coordinates(pc):
-    spc, l, d = get_peel_coordinates_from_point_code(pc)
-    xyz = get_xyz_from_peel_coordinates(spc, l, d)
-    return xyz
-
-
-def get_point_code_from_xyz_using_peel_coordinates(xyz):
-    spc, l, d = get_peel_coordinates_from_xyz(xyz)
-    pc = icm.get_point_code_from_peel_coordinates(spc, l, d)
-    return pc
-
 
 
 # optimizations I could make (but don't do it prematurely!)
@@ -56,24 +30,31 @@ def get_point_code_from_xyz_using_peel_coordinates(xyz):
 while True:
     # pick a test point
     if random.random() < 1/3:
-        p = UnitSpherePoint.random()
-        pc = None
-        print(f"random point: {p}")
+        pc_orig = icm.get_random_point_code(min_iterations=0, expected_iterations=3, max_iterations=9)
+        p = UnitSpherePoint.from_xyz(icm.get_xyz_from_point_code_using_peel_coordinates(pc_orig))
+        print(f"random point: {pc_orig}")
     elif random.random() < 1/2:
         i = random.randrange(len(sp.STARTING_POINT_CODES))
-        pc = sp.STARTING_POINT_CODES[i]
+        pc_orig = sp.STARTING_POINT_CODES[i]
         p = starting_points[i]
-        print(f"point {pc}")
+        print(f"starting point {pc_orig}")
     else:
         edge_name, p = random.choice(list(edge_midpoints.items()))
-        print(f"point at middle of edge {edge_name}")
+        spc_expected, direction_expected = ed.get_ancestor_starting_point_and_direction_of_edge(edge_name)
+        pc_orig = spc_expected + direction_expected
+        print(f"point at middle of edge {edge_name}: {pc_orig}")
     
     spc, l, d = icm.get_peel_coordinates_of_point(p)
+    print(f"{spc = }, {l = }, {d = } from p")
     pc = icm.get_point_code_from_peel_coordinates(spc, l, d)
+    print(f"{pc = } from peel coords")
+    assert pc == pc_orig
+    
     ll = p.latlondeg(as_array=False)
     fs = fc.get_faces_of_point_by_closest_center(p)
-    pc_bin = point_code_to_binary(pc)
-    assert binary_to_point_code(pc_bin) == pc
-    print(f"latlon {ll}\nis at peel coords L={l}, D={d} from point {spc}\ngot point code {pc}, binary {pc_bin}")
+    fpc = point_code_to_float(pc)
+    print(f"{fpc = }")
+
+    print(f"latlon {ll}\nis at peel coords L={l}, D={d} from point {spc}\ngot point code {pc}, float {fpc}")
     input("check")
     print()

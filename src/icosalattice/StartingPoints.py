@@ -9,6 +9,10 @@ from icosalattice.ConstantMakerDecorator import constant_maker
 MID_LAT_DEG = math.atan(1/2) * 180/math.pi
 STARTING_POINT_CODES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
+# for float representation of point codes
+STARTING_POINT_CODE_TO_FLOAT = {pc: float(i) for i, pc in enumerate(STARTING_POINT_CODES)}
+STARTING_POINT_FLOAT_TO_CODE = {x: pc for pc, x in STARTING_POINT_CODE_TO_FLOAT.items()}
+
 
 def get_starting_points_latlon_named():
     icosahedron_original_points_latlon = {
