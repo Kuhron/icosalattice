@@ -9,6 +9,7 @@ from icosalattice.UnitSpherePoint import UnitSpherePoint
 import icosalattice.Faces as fc
 import icosalattice.Edges as ed
 from icosalattice.PointRepresentationAsFloat import point_code_to_float, point_float_to_code
+import icosalattice.PeelCoordinates as pe
 
 
 faces = fc.get_face_names()
@@ -31,7 +32,7 @@ while True:
     # pick a test point
     if random.random() < 1/3:
         pc_orig = icm.get_random_point_code(min_iterations=0, expected_iterations=3, max_iterations=9)
-        p = UnitSpherePoint.from_xyz(icm.get_xyz_from_point_code_using_peel_coordinates(pc_orig))
+        p = UnitSpherePoint.from_xyz(*pe.get_xyz_from_point_code_using_peel_coordinates(pc_orig))
         print(f"random point: {pc_orig}")
     elif random.random() < 1/2:
         i = random.randrange(len(sp.STARTING_POINT_CODES))
@@ -44,12 +45,12 @@ while True:
         pc_orig = spc_expected + direction_expected
         print(f"point at middle of edge {edge_name}: {pc_orig}")
     
-    spc, l, d = icm.get_peel_coordinates_of_point(p)
+    spc, l, d = pe.get_peel_coordinates_of_point(p)
     print(f"{spc = }, {l = }, {d = } from p")
-    pc = icm.get_point_code_from_peel_coordinates(spc, l, d)
+    pc = pe.get_point_code_from_peel_coordinates(spc, l, d)
     print(f"{pc = } from peel coords")
     assert pc == pc_orig
-    
+
     ll = p.latlondeg(as_array=False)
     fs = fc.get_faces_of_point_by_closest_center(p)
     fpc = point_code_to_float(pc)

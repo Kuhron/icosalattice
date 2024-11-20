@@ -89,13 +89,17 @@ def get_faces_of_point_by_plane_projection(p):
 
 def get_faces_of_point_by_closest_center(p):
     p_xyz = p.xyz(as_array=True)
+    return get_faces_of_xyz_by_closest_center(p_xyz)
+
+
+def get_faces_of_xyz_by_closest_center(xyz):
     face_name_to_xyzs = get_face_corner_coordinates_xyz(as_array=True)
     best_distance = None
     chosen_faces = []
     for face_name, xyzs in face_name_to_xyzs.items():
         xyzs = [x for x in xyzs if x is not None]
         center = sum(xyzs) / 3
-        d = mcm.xyz_distance(center, p_xyz)
+        d = mcm.xyz_distance(center, xyz)
         if best_distance is None or (d < best_distance and abs(d-best_distance) > 1e-9):
             # print(f"best distance: {best_distance} -> {d}")
             best_distance = d
@@ -104,3 +108,11 @@ def get_faces_of_point_by_closest_center(p):
             chosen_faces.append(face_name)
     # print("by closest center:", chosen_faces, best_distance, p_xyz)
     return sorted(chosen_faces)
+
+
+def get_vertices_in_common_to_faces(fs):
+    s = set(fs[0]) - {"X"}
+    for f in fs[1:]:
+        s &= set(f)
+    return s
+
