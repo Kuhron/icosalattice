@@ -237,13 +237,13 @@ if __name__ == "__main__":
     # plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX")
     # plot_point_codes_on_sphere_3d(pcs, with_labels=True)
 
-    # # observe how the points lie along lines or curves on the face
-    # pcs = ["C"]
-    # for i in range(6):
-    #     pcs = reduce(lambda x,y: x+y, [[pc + x for x in "0123"] for pc in pcs])
-    # pcs = sorted(set(pca.strip_trailing_zeros(pc) for pc in pcs))
-    # plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
-    # plot_point_codes_on_sphere_3d(pcs, with_labels=False)
+    # observe how the points lie along lines or curves on the face
+    pcs = ["C"]
+    for i in range(6):
+        pcs = reduce(lambda x,y: x+y, [[pc + x for x in "0123"] for pc in pcs])
+    pcs = sorted(set(pca.strip_trailing_zeros(pc) for pc in pcs))
+    plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
+    plot_point_codes_on_sphere_3d(pcs, with_labels=False)
 
     # try a "line" of points only going in one icosa direction
     pc_init, pc_final, direction = "C101010101", "C202020202", 3  # alternating staircase fractal
@@ -265,3 +265,28 @@ if __name__ == "__main__":
     plt.plot(angles * 180/np.pi)
     plt.ylabel("deg")
     plt.show()
+
+
+    # name of original method for locating child points: Bisection From Parents (or maybe just "Bisection" for short)
+
+    # TODO one idea for redoing where the child points are:
+    # - method name: Corrected Plane Gridding
+    # - use peel coordinates as primary
+    # - but dilate where the l and d proportions are by using the trig formula for lp (so the same delta l moves less near the center and more near the corners)
+    # - draw triangular grid on the face plane based solely on these lp points on the three edges, so the grid lines are straight on the face plane
+    # - project the resulting points to the sphere
+    # - see what they look like and how far apart they are, hopefully the lp adjustment makes them relatively uniformly spaced at least within a face
+    # - and hopefully the lines put the points in neat rows on the sphere surface, and most or all refraction occurs at actual face boundaries
+    # - (want no Sierpinski artifacts in the distribution of points within a face)
+
+    # TODO another idea for child point locations:
+    # - method name: Arc Gridding
+    # - divide the sphere edges into n equal segments based on which iteration you are at (e.g. 8 segments)
+    # - then connect corresponding points along these edges using great circle paths
+    # - hopefully the gc paths meet at sixfold vertices
+    # - and I suspect this method is equivalent to Grid Distortion
+
+    # the method of doing the gridding on the face plane uniformly and then projecting that out onto the sphere, introducing distortion,
+    # - could be called Uncorrected Plane Gridding
+
+    
