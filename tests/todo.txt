@@ -1,5 +1,7 @@
 tests to make
 - peel shift (easy, stuff like CD -> EF/GH/IJ/KL, just to be sure it works correctly, and verify it doesn't affect the numbers for point codes)
+- test mcm.get_unit_sphere_midpoint_from_xyz
+- test mcm.mag_3d_simple
 - peel coordinate conversion to/from xyz
 - point code to/from xyz via peel coordinates should match point code to/from xyz via ancestry
 

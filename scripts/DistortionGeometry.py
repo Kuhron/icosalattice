@@ -2,6 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from functools import reduce
 
 import icosalattice.StartingPoints as sp
@@ -39,13 +40,16 @@ def plot_peel_coordinates_on_one_half_peel(ls, ds, labels=None):
     xs = []
     ys = []
     for l, d, label in zip(ls, ds, labels):
+        if l is None:
+            assert d is None
+            continue
         dx = l * dxl + d * dxd
         dy = l * dyl + d * dyd
         x = x0 + dx
         y = y0 + dy
         xs.append(x)
         ys.append(y)
-        plt.gca().text(x, y, label)
+        plt.gca().annotate(label, (x, y))
     plt.scatter(xs, ys)
 
     # view as half-peel sheared into a square
@@ -61,11 +65,14 @@ def plot_peel_coordinates_on_one_half_peel(ls, ds, labels=None):
     xs = []
     ys = []
     for l, d, label in zip(ls, ds, labels):
+        if l is None:
+            assert d is None
+            continue
         x = 1/2 - l
         y = 1/2 - d
         xs.append(x)
         ys.append(y)
-        plt.gca().text(x, y, label)
+        plt.gca().annotate(label, (x,y))
     plt.scatter(xs, ys)
 
     plt.show()
@@ -87,22 +94,64 @@ def vectors_between_pairs_of_point_codes_are_parallel(pair0, pair1):
     return mag < 1e-9
 
 
-def plot_point_codes_on_half_peel(pcs, face_name, with_labels=True):
+def get_peel_coordinates_of_point_codes_on_face(pcs, face_name):
     ls = []
     ds = []
-    labels = []
     for pc in pcs:
         xyz = anc.get_xyz_from_point_code_using_ancestry(pc, as_array=True)
-        print(pc)
         try:
             l, d = pe.get_peel_coordinates_of_point_from_face_name(xyz, face_name, allow_one=True)
         except mu.InvalidVectorDecompositionException:
-            continue
+            l, d = None, None
         ls.append(l)
         ds.append(d)
+    return ls, ds
+
+
+def plot_point_codes_on_half_peel_face_planes(pcs, face_name, with_labels=True):
+    ls, ds = get_peel_coordinates_of_point_codes_on_face(pcs, face_name=face_name)
+    ls_to_plot = []
+    ds_to_plot = []
+    labels = []
+    for pc, l, d in zip(pcs, ls, ds):
+        if l is None:
+            assert d is None
+            continue
+        ls_to_plot.append(l)
+        ds_to_plot.append(d)
         if with_labels:
             labels.append(pc)
     plot_peel_coordinates_on_one_half_peel(ls, ds, labels=labels if with_labels else None)
+
+
+def plot_point_codes_on_sphere_3d(pcs, with_labels=True):
+    xyzs = [anc.get_xyz_from_point_code_using_ancestry(pc, as_array=False) for pc in pcs]
+    xs, ys, zs = zip(*xyzs)
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    ax.scatter(xs, ys, zs)
+    ax.set(
+        xticklabels=[],
+        yticklabels=[],
+        zticklabels=[],
+    )
+    if with_labels:
+        for pc, x, y, z in zip(pcs, xs, ys, zs):
+            ax.text(x, y, z, pc)
+    plt.show()
+
+
+def get_stepwise_path_distances_and_angles(xs, ys):
+    # see how a path of points looks
+    # for qualitatively investigating what is going on with what should be lines or curves of points along a single direction path on a face plane
+    # (e.g., D from C100 to C200)
+    assert len(xs) == len(ys)
+    if len(xs) < 1:
+        raise ValueError("need at least 2 points")
+    dxs = np.diff(xs, n=1)
+    dys = np.diff(ys, n=1)
+    distances = (dxs**2 + dys**2)**0.5
+    angles = np.arctan2(dys, dxs)
+    return distances, angles
 
 
 
@@ -188,13 +237,29 @@ if __name__ == "__main__":
     
     # plot the points used in the line segment tests, so I can look at where they actually are after distortion induced by projection onto the face plane
     pcs = sorted(set(reduce(lambda x,y: x+y, [reference_pair_l, reference_pair_dl, reference_pair_d] + test_pairs_l + test_pairs_dl + test_pairs_d)))
-    print(pcs)
-    plot_point_codes_on_half_peel(pcs, face_name="CAKX")
+    plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX")
+    plot_point_codes_on_sphere_3d(pcs, with_labels=True)
 
-    # observe how the points lie along lines or curves on the face
-    pcs = ["C"]
-    for i in range(6):
-        pcs = reduce(lambda x,y: x+y, [[pc + x for x in "0123"] for pc in pcs])
-    pcs = sorted(set(pca.strip_trailing_zeros(pc) for pc in pcs))
-    print(pcs)
-    plot_point_codes_on_half_peel(pcs, face_name="CAKX", with_labels=False)
+    # # observe how the points lie along lines or curves on the face
+    # pcs = ["C"]
+    # for i in range(6):
+    #     pcs = reduce(lambda x,y: x+y, [[pc + x for x in "0123"] for pc in pcs])
+    # pcs = sorted(set(pca.strip_trailing_zeros(pc) for pc in pcs))
+    # plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
+    # plot_point_codes_on_sphere_3d(pcs, with_labels=False)
+
+    # try a "line" of points only going in one icosa direction
+    pc_init = "C101010101"
+    pc_final = "C202020202"
+    direction = 3
+    pcs = [pc_init]
+    while pcs[-1] != pc_final:
+        pcs.append(pca.add_direction_to_point_code(pcs[-1], direction))
+    plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
+    ls, ds = get_peel_coordinates_of_point_codes_on_face(pcs, face_name="CAKX")
+    distances, angles = get_stepwise_path_distances_and_angles(ls, ds)
+    plt.subplot(2, 1, 1)
+    plt.plot(distances)
+    plt.subplot(2, 1, 2)
+    plt.plot(angles)
+    plt.show()

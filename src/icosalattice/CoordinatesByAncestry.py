@@ -1,10 +1,12 @@
 import numpy as np
+import functools
 
 import icosalattice.MapCoordinateMath as mcm
 import icosalattice.StartingPoints as sp
 from icosalattice.Adjacency import get_adjacency_from_point_code
 
 
+@functools.lru_cache(maxsize=100000)
 def get_xyz_from_point_code_using_ancestry(pc, as_array=True):
     if len(pc) == 1:
         res = get_xyz_of_initial_point_code(pc)
