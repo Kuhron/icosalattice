@@ -58,8 +58,11 @@ def get_vector_decomposition_coefficients(v, v1, v2):
     if -1e-9 < a2 < 0:
         a2 = 0
 
-    assert 0 <= a1 <= 1 and 0 <= a2 <= 1, f"vector decomposition should have coefficients between 0 and 1\ngot:\n  {v}\n= {a1} * {v1}\n+ {a2} * {v2}"
+    if not (0 <= a1 <= 1 and 0 <= a2 <= 1):
+        raise InvalidVectorDecompositionException(f"vector decomposition should have coefficients between 0 and 1\ngot:\n  {v}\n= {a1} * {v1}\n+ {a2} * {v2}")
     a1 = float(a1)
     a2 = float(a2)
     return a1, a2
 
+
+class InvalidVectorDecompositionException(Exception): pass

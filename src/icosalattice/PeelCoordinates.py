@@ -59,6 +59,7 @@ def get_point_code_from_peel_coordinates(starting_pc, l_coord, d_coord, max_iter
 
 
 def get_peel_coordinates_from_point_code(pc):
+    raise Exception("linear assumption does not work; do not use this function until distortion has been worked out")
     spc = pc[0]
     l_coord = 0
     d_coord = 0
@@ -226,7 +227,7 @@ def get_point_code_from_latlon_using_peel_coordinates(latlon, deg=True, as_array
     return get_point_code_from_xyz_using_peel_coordinates(xyz)
 
 
-def get_peel_coordinates_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, xyz3):
+def get_peel_coordinates_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, xyz3, allow_one=False):
     # point in question is at xyz_proj AFTER ALREADY BEING PROJECTED onto the plane containing the three vertices of the face it's on
     # face corners are xyz0 at the ancestral starting point, and xyz1/2/3 at the starting points in the 1/2/3 directions from there
     if xyz3 is None:
@@ -239,7 +240,7 @@ def get_peel_coordinates_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, 
         # 2 direction = DL
         l_coord = a1 + a2
         d_coord = a2
-        assert 0 <= l_coord < 1 and 0 <= d_coord < 1, "left and down coordinates should be between 0 and 1"
+        validate_l_and_d_coordinates(l_coord, d_coord, allow_one=allow_one)
     elif xyz1 is None:
         d02 = xyz2 - xyz0
         d03 = xyz3 - xyz0
@@ -250,16 +251,33 @@ def get_peel_coordinates_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, 
         # 3 direction = D
         l_coord = a2
         d_coord = a2 + a3
-        assert 0 <= l_coord < 1 and 0 <= d_coord < 1, "left and down coordinates should be between 0 and 1"
+        validate_l_and_d_coordinates(l_coord, d_coord, allow_one=allow_one)
     else:
         raise Exception(f"bad face vertices")
     return l_coord, d_coord
 
 
-def get_peel_coordinates_of_point_from_face_name(p_xyz, face):
+def validate_l_and_d_coordinates(l_coord, d_coord, allow_one=False):
+    l_geq_0 = abs(l_coord) < 1e-9 or l_coord > 0
+    d_geq_0 = abs(d_coord) < 1e-9 or d_coord > 0
+    l_lt_1 = l_coord < 1
+    d_lt_1 = d_coord < 1
+    l_eq_1 = abs(1 - l_coord) < 1e-9
+    d_eq_1 = abs(1 - d_coord) < 1e-9
+    if allow_one:
+        l_satisfied = l_geq_0 and (l_lt_1 or l_eq_1)
+        d_satisfied = d_geq_0 and (d_lt_1 or d_eq_1)
+        assert l_satisfied and d_satisfied, f"left and down coordinates should be between 0 and 1 (here, allowing equal to one)\nbut got (l, d) = {(l_coord, d_coord)}"
+    else:
+        l_satisfied = l_geq_0 and l_lt_1
+        d_satisfied = d_geq_0 and d_lt_1
+        assert l_satisfied and d_satisfied, f"left and down coordinates should be between 0 and 1 (here, excluding equal to one)\nbut got (l, d) = {(l_coord, d_coord)}"
+
+
+def get_peel_coordinates_of_point_from_face_name(p_xyz, face, allow_one=False):
     ax, ay, az, c = fc.get_plane_parameters_of_faces()[face]
     xyz0, xyz1, xyz2, xyz3 = fc.get_face_corner_coordinates_xyz(as_array=True)[face]
     xyz_proj = mcm.project_point_onto_plane(p_xyz, ax, ay, az, c)
-    l_coord, d_coord = get_peel_coordinates_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, xyz3)
+    l_coord, d_coord = get_peel_coordinates_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, xyz3, allow_one=allow_one)
     return l_coord, d_coord
 

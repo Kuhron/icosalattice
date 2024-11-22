@@ -1,13 +1,21 @@
+import numpy as np
+
 import icosalattice.MapCoordinateMath as mcm
 import icosalattice.StartingPoints as sp
 from icosalattice.Adjacency import get_adjacency_from_point_code
 
 
-def get_xyz_from_point_code_using_ancestry(pc):
+def get_xyz_from_point_code_using_ancestry(pc, as_array=True):
     if len(pc) == 1:
-        return get_xyz_of_initial_point_code(pc)
+        res = get_xyz_of_initial_point_code(pc)
     else:
-        return get_xyz_from_point_code_recursive(pc)
+        res = get_xyz_from_point_code_recursive(pc)
+
+    # I don't feel like adding an "as_array" kwarg to so many functions this calls, so just going to do it here right now
+    if as_array:
+        return np.array(res)
+    else:
+        return res
 
 
 def get_xyz_of_initial_point_code(pc):

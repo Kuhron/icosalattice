@@ -14,6 +14,10 @@ import icosalattice.Edges as ed
 import icosalattice.MapCoordinateMath as mcm
 
 
+ANGLE_BETWEEN_VERTICES_RAD = np.atan(2)
+ANGLE_BETWEEN_VERTICES_DEG = ANGLE_BETWEEN_VERTICES_RAD * 180/np.pi
+
+
 def get_iteration_born_from_point_code(pc):
     enforce_no_trailing_zeros(pc)
     return get_iteration_number_from_point_code(pc)
