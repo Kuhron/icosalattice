@@ -208,7 +208,8 @@ def verify_valid_direction(pc, x):
             allowed_directions = [1, 2, 3, -3]  # cannot go right from right edge
     else:
         allowed_directions = [1, 2, 3, -1, -2, -3]
-    assert x in allowed_directions, f"direction {x} from {pc=} is not allowed"
+    if x not in allowed_directions:
+        raise ValueError(f"direction {x!r} from {pc=} is not allowed; allowed directions are {allowed_directions}")
 
 
 def increment_binary_code(tail, direction_digit, plus=True):
