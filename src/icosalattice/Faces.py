@@ -116,3 +116,9 @@ def get_vertices_in_common_to_faces(fs):
         s &= set(f)
     return s
 
+
+def get_faces_in_watershed_of_starting_point(spc):
+    fs = [x for x in FACE_NAMES if x.startswith(spc)]
+    assert len(fs) == 2, fs
+    return fs
+

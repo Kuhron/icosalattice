@@ -24,6 +24,10 @@ def plot_point_codes_on_half_peel_face_planes(pcs, face_name, with_labels=True):
 
 def plot_point_codes_on_sphere_3d(pcs, with_labels=True):
     xyzs = [anc.get_xyz_from_point_code_using_ancestry(pc, as_array=False) for pc in pcs]
+    plot_xyzs_on_sphere_3d(xyzs, labels=pcs if with_labels else None)
+
+
+def plot_xyzs_on_sphere_3d(xyzs, labels=None):
     xs, ys, zs = zip(*xyzs)
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     ax.scatter(xs, ys, zs)
@@ -32,9 +36,9 @@ def plot_point_codes_on_sphere_3d(pcs, with_labels=True):
         yticklabels=[],
         zticklabels=[],
     )
-    if with_labels:
-        for pc, x, y, z in zip(pcs, xs, ys, zs):
-            ax.text(x, y, z, pc)
+    if labels is not None:
+        for label, x, y, z in zip(labels, xs, ys, zs):
+            ax.text(x, y, z, label)
     plt.show()
 
 

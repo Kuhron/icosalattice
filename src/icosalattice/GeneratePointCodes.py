@@ -3,10 +3,18 @@ from functools import reduce
 
 import icosalattice.Iterations as it
 import icosalattice.PointCodeArithmetic as pca
+import icosalattice.StartingPoints as sp
 
 
 
 def get_all_point_codes_from_ancestor_at_iteration(ancestor_pc, iterations, with_trailing_zeros=True):
+    if ancestor_pc in ["A", "B"]:
+        if with_trailing_zeros:
+            pc = ancestor_pc + "0" * iterations
+        else:
+            pc = ancestor_pc
+        return [pc]
+    
     its_of_ancestor = it.get_iteration_number_from_point_code(ancestor_pc)
     if iterations < its_of_ancestor:
         raise ValueError(f"{ancestor_pc = } already has {its_of_ancestor} iterations, so cannot get descendants with only {iterations} iterations")
@@ -17,6 +25,13 @@ def get_all_point_codes_from_ancestor_at_iteration(ancestor_pc, iterations, with
     if not with_trailing_zeros:
         pcs = [pca.strip_trailing_zeros(pc) for pc in pcs]
     assert len(pcs) == len(set(pcs)), "shouldn't have had duplicates"
+    return pcs
+
+
+def get_all_point_codes_at_iteration(iterations, with_trailing_zeros=True):
+    pcs = []
+    for spc in sp.STARTING_POINT_CODES:
+        pcs += get_all_point_codes_from_ancestor_at_iteration(ancestor_pc=spc, iterations=iterations, with_trailing_zeros=with_trailing_zeros)
     return pcs
 
 
@@ -60,3 +75,10 @@ def get_random_point_code(min_iterations, expected_iterations, max_iterations, p
 
     return s
 
+
+if __name__ == "__main__":
+    for i in range(0, 5):
+        pcs = get_all_point_codes_at_iteration(iterations=i, with_trailing_zeros=False)
+        print(len(pcs))
+    pcs = get_all_point_codes_at_iteration(iterations=2, with_trailing_zeros=True)
+    print(pcs)

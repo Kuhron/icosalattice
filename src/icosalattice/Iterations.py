@@ -21,12 +21,11 @@ def get_iteration_number_from_point_code(pc):
     return len(pc) - 1
 
 
-def get_n_points_from_iterations(n):
-    assert type(n) is int
-    return get_exact_n_points_from_iterations(n)
+def get_n_points_from_iterations(n_iters: int) -> int:
+    return get_exact_n_points_from_iterations(n_iters)
 
 
-def get_exact_n_points_from_iterations(n_iters):
+def get_exact_n_points_from_iterations(n_iters: int) -> int:
     return 2 + 10 * (4 ** n_iters)
 
 

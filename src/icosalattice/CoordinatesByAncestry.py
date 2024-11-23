@@ -24,10 +24,6 @@ def get_xyz_of_initial_point_code(pc):
     p = sp.STARTING_POINTS[sp.STARTING_POINT_CODES.index(pc)]
     return p.xyz()
 
-    # old way
-    # pn = get_point_number_from_point_code(pc)
-    # return get_xyz_of_initial_point_number(pn)
-
 
 def get_xyz_from_point_code_recursive(pc):
     assert len(pc) > 1, "should get latlon/xyz of initial point directly"

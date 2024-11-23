@@ -25,15 +25,26 @@ import icosalattice.CoordinatesByAncestry as anc
 
 
 def get_peel_coordinates_of_point(p: UnitSpherePoint):
+    raise Exception("linear assumption does not work; do not use this function until distortion has been worked out")
     p_xyz = p.xyz(as_array=True)
     return get_peel_coordinates_from_xyz(p_xyz)
 
 
-def get_point_code_from_peel_coordinates(starting_pc, l_coord, d_coord, max_iterations=15):
+def get_point_code_from_peel_coordinates(starting_pc, l_coord, d_coord, max_iterations=15, allow_clipping=False):
+    # take the point code at face value as encoding peel coordinates,
+    # ignoring any questions about distortion or where exactly the l and d coordinates are located
     s = starting_pc
+    assert s in sp.STARTING_POINT_CODES, f"{s} is not a valid starting point code"
     iterations = 0
-    while (iterations < max_iterations) and (l_coord > 0 or d_coord > 0):
+    while l_coord > 0 or d_coord > 0:
         # print(f"iteration {iterations}, {l_coord = }, {d_coord = }, {s = }")
+        if iterations > max_iterations:
+            if allow_clipping:
+                print(f"max iterations reached for getting point code from peel coordinates; clipping")
+                break
+            else:
+                raise RuntimeError(f"failed to finish getting point code from peel coordinates without clipping\n{l_coord = }, {d_coord = }, current pc = {s}")
+        
         assert 0 <= l_coord < 1 and 0 <= d_coord < 1
         l_coord *= 2
         d_coord *= 2
@@ -52,6 +63,7 @@ def get_point_code_from_peel_coordinates(starting_pc, l_coord, d_coord, max_iter
         else:
             raise Exception("impossible")
         s += c
+
         iterations += 1
 
     # strip trailing zeros which never led to more precision because we hit iteration limit
@@ -61,7 +73,8 @@ def get_point_code_from_peel_coordinates(starting_pc, l_coord, d_coord, max_iter
 
 
 def get_peel_coordinates_from_point_code(pc):
-    raise Exception("linear assumption does not work; do not use this function until distortion has been worked out")
+    # take the point code at face value as encoding peel coordinates,
+    # ignoring any questions about distortion or where exactly the l and d coordinates are located
     spc = pc[0]
     l_coord = 0
     d_coord = 0
@@ -78,6 +91,7 @@ def get_peel_coordinates_from_point_code(pc):
 
 
 def get_xyz_from_peel_coordinates(starting_pc, l_coord, d_coord):
+    # take l_coord and d_coord at face value as linear proportions of the way through the half-peel
     if starting_pc in ["A", "B"]:
         assert l_coord == 0 and d_coord == 0, f"cannot have steps from a pole, but got spc={starting_pc}, l={l_coord}, d={d_coord}"
 
@@ -86,8 +100,7 @@ def get_xyz_from_peel_coordinates(starting_pc, l_coord, d_coord):
     if l_coord == 0 and d_coord == 0:
         return sp.STARTING_POINTS[sp.STARTING_POINT_CODES.index(starting_pc)].xyz()
     
-    fs = [x for x in fc.FACE_NAMES if x.startswith(starting_pc)]
-    assert len(fs) == 2, fs
+    fs = fc.get_faces_in_watershed_of_starting_point(starting_pc)
     face_name_to_xyzs = fc.get_face_corner_coordinates_xyz(as_array=True)
 
     if l_coord > d_coord:
@@ -149,6 +162,7 @@ def get_xyz_from_peel_coordinates_on_downward_face(vertices_xyz, l_coord, d_coor
 
 
 def get_peel_coordinates_from_xyz(xyz):
+    raise Exception("linear assumption does not work; do not use this function until distortion has been worked out")
     fs = fc.get_faces_of_xyz_by_closest_center(xyz)
 
     if len(fs) == 1:
@@ -185,12 +199,12 @@ def get_peel_coordinates_from_xyz(xyz):
                 face ,= [x for x in fs if x[0] == spc]
                 l_coord, d_coord = get_peel_coordinates_of_point_from_face_name(xyz, face)
             elif direction == "3":
-                # edge point in the 2 direction, so it borders both the up-pointing and down-pointing faces
-                # verify that getting coords from both faces give same result
+                # get peel coordinates on down-pointing face radiating from ancestor point
                 face ,= [x for x in fs if x[0] == spc]
                 l_coord, d_coord = get_peel_coordinates_of_point_from_face_name(xyz, face)
             elif direction == "2":
-                # get peel coordinates on down-pointing face radiating from ancestor point
+                # edge point in the 2 direction, so it borders both the up-pointing and down-pointing faces
+                # verify that getting coords from both faces give same result
                 l_coord0, d_coord0 = get_peel_coordinates_of_point_from_face_name(xyz, fs[0])
                 l_coord1, d_coord1 = get_peel_coordinates_of_point_from_face_name(xyz, fs[1])
                 assert abs(l_coord0 - l_coord1) < 1e-9
@@ -214,6 +228,7 @@ def get_xyz_from_point_code_using_peel_coordinates(pc):
 
 
 def get_point_code_from_xyz_using_peel_coordinates(xyz):
+    raise Exception("linear assumption does not work; do not use this function until distortion has been worked out")
     spc, l, d = get_peel_coordinates_from_xyz(xyz)
     pc = get_point_code_from_peel_coordinates(spc, l, d)
     return pc
@@ -276,9 +291,9 @@ def validate_l_and_d_coordinates(l_coord, d_coord, allow_one=False):
         assert l_satisfied and d_satisfied, f"left and down coordinates should be between 0 and 1 (here, excluding equal to one)\nbut got (l, d) = {(l_coord, d_coord)}"
 
 
-def get_peel_coordinates_of_point_from_face_name(p_xyz, face, allow_one=False):
-    ax, ay, az, c = fc.get_plane_parameters_of_faces()[face]
-    xyz0, xyz1, xyz2, xyz3 = fc.get_face_corner_coordinates_xyz(as_array=True)[face]
+def get_peel_coordinates_of_point_from_face_name(p_xyz, face_name, allow_one=False):
+    ax, ay, az, c = fc.get_plane_parameters_of_faces()[face_name]
+    xyz0, xyz1, xyz2, xyz3 = fc.get_face_corner_coordinates_xyz(as_array=True)[face_name]
     xyz_proj = mcm.project_point_onto_plane(p_xyz, ax, ay, az, c)
     l_coord, d_coord = get_peel_coordinates_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, xyz3, allow_one=allow_one)
     return l_coord, d_coord

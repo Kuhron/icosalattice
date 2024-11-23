@@ -50,46 +50,6 @@ def get_stepwise_path_distances_and_angles(xs, ys):
 
 
 if __name__ == "__main__":
-    # angle between two vertices of icosahedron
-    alpha = icm.ANGLE_BETWEEN_VERTICES_RAD
-
-    p_a = sp.STARTING_POINTS[0]
-    p_c = sp.STARTING_POINTS[2]
-    p_k = sp.STARTING_POINTS[10]
-    xyz_a = p_a.xyz(as_array=True)
-    xyz_c = p_c.xyz(as_array=True)
-    xyz_k = p_k.xyz(as_array=True)
-
-    a_dot_c = np.dot(xyz_a, xyz_c)
-    alpha_by_dot_product = np.acos(a_dot_c) / (1 * 1)
-    assert alpha == alpha_by_dot_product
-
-    h = np.cos(alpha/2)  # height from center of sphere to middle of edge of face plane
-    h_from_radicals = np.sqrt(1/10 * (5 + np.sqrt(5)))
-    assert h == h_from_radicals
-
-    w = 2*np.sin(alpha/2)  # length of edge of face plane
-    assert np.isclose(w, np.linalg.norm(xyz_a - xyz_c), atol=1e-9)
-    assert np.isclose(w, np.linalg.norm(xyz_a - xyz_k), atol=1e-9)
-    assert np.isclose(w, np.linalg.norm(xyz_c - xyz_k), atol=1e-9)
-
-    assert h**2 + (w/2)**2 == 1**2 # Pythagoras for triangle (sphere center, vertex, middle of face plane edge)
-
-    # lp is the length along face plane edge (from one vertex) of the projection of a point above it on the sphere
-    get_lp = lambda theta: w/2 - get_x(theta)
-
-    # x is the distance from the middle of the face plane edge to the projected point
-    get_x = lambda theta: h * np.tan(alpha/2 - theta)
-
-    # # plot how lp deviates from assuming linear movement along face plane edge
-    # thetas = np.linspace(0, alpha, 101)
-    # lps = get_lp(thetas)
-    # proportions = thetas/alpha
-    # deviations_from_linear = lps - (proportions * w)
-    # assert deviations_from_linear[0] == deviations_from_linear[50] == deviations_from_linear[100] == 0
-    # plt.plot(thetas, deviations_from_linear)
-    # plt.show()
-
     # plot a half-peel and some basic points
     ls = [0, 0, 0, 0.5, 0.5, 0.5, 1, 1, 1]
     ds = [0, 0.5, 1] * 3
