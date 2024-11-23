@@ -349,3 +349,7 @@ def strip_trailing_zeros(s):
         s = s[:-1]
     return s
 
+
+def enforce_no_trailing_zeros(pc):
+    assert pc[-1] != "0", f"point code shouldn't have trailing zeros, got {pc}"
+

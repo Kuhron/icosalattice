@@ -33,3 +33,7 @@ def plot_adjacency_of_point_code(pc):
     for x,y,label in zip(xs, ys, labels):
         ax.annotate(label, xy=(x,y), xytext=(x+0.1,y+0.1/2))
     plt.show()
+
+
+if __name__ == "__main__":
+    plot_adjacency_of_point_code("J33")

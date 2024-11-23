@@ -6,13 +6,15 @@
 # from this we can get the point code directly
 
 
+import numpy as np
+
 from icosalattice.UnitSpherePoint import UnitSpherePoint
 import icosalattice.MathUtil as mu
 import icosalattice.StartingPoints as sp
 import icosalattice.Faces as fc
 import icosalattice.Edges as ed
 import icosalattice.MapCoordinateMath as mcm
-import numpy as np
+import icosalattice.CoordinatesByAncestry as anc
 
 
 # potential optimizations, if needed:
@@ -281,3 +283,16 @@ def get_peel_coordinates_of_point_from_face_name(p_xyz, face, allow_one=False):
     l_coord, d_coord = get_peel_coordinates_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, xyz3, allow_one=allow_one)
     return l_coord, d_coord
 
+
+def get_peel_coordinates_of_point_codes_on_face(pcs, face_name):
+    ls = []
+    ds = []
+    for pc in pcs:
+        xyz = anc.get_xyz_from_point_code_using_ancestry(pc, as_array=True)
+        try:
+            l, d = get_peel_coordinates_of_point_from_face_name(xyz, face_name, allow_one=True)
+        except mu.InvalidVectorDecompositionException:
+            l, d = None, None
+        ls.append(l)
+        ds.append(d)
+    return ls, ds

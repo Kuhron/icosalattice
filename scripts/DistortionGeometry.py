@@ -11,71 +11,11 @@ import icosalattice.CoordinatesByAncestry as anc
 import icosalattice.PeelCoordinates as pe
 import icosalattice.PointCodeArithmetic as pca
 import icosalattice.MathUtil as mu
+import icosalattice.GeneratePointCodes as gpc
+import icosalattice.PlotPointLocations as ppl
+from icosalattice.PointPaths import get_point_path
+from icosalattice.PlotPaths import plot_distances_and_angles
 
-
-def plot_peel_coordinates_on_one_half_peel(ls, ds, labels=None):
-    if labels is None:
-        labels = [None for x in ls]
-    assert len(ls) == len(ds) == len(labels)
-
-    plt.subplot(1, 2, 1)
-    # lines for triangles
-    x_mid = 0
-    x_right = 1/2
-    x_left = -x_right
-    y_mid = 0
-    y_top = np.sqrt(3)/2
-    y_bottom = -y_top
-    plt.plot([x_right, x_mid, x_left, x_right, x_mid, x_left], [y_mid, y_top, y_mid, y_mid, y_bottom, y_mid])
-    plt.gca().set_aspect("equal")
-
-    dxl = x_mid - x_right
-    dyl = y_top - y_mid
-    dxd = x_mid - x_right
-    dyd = y_bottom - y_mid
-    x0 = x_right
-    y0 = y_mid
-
-    # I'm sure numpy can do all this in one matrix operation but I can't be bothered right now
-    xs = []
-    ys = []
-    for l, d, label in zip(ls, ds, labels):
-        if l is None:
-            assert d is None
-            continue
-        dx = l * dxl + d * dxd
-        dy = l * dyl + d * dyd
-        x = x0 + dx
-        y = y0 + dy
-        xs.append(x)
-        ys.append(y)
-        plt.gca().annotate(label, (x, y))
-    plt.scatter(xs, ys)
-
-    # view as half-peel sheared into a square
-    plt.subplot(1, 2, 2)
-    # lines for triangles
-    x_right = 1/2
-    x_left = -x_right
-    y_top = 1/2
-    y_bottom = -y_top
-    plt.plot([x_right, x_left, x_left, x_right, x_right, x_left], [y_top, y_top, y_bottom, y_top, y_bottom, y_bottom])
-    plt.gca().set_aspect("equal")
-
-    xs = []
-    ys = []
-    for l, d, label in zip(ls, ds, labels):
-        if l is None:
-            assert d is None
-            continue
-        x = 1/2 - l
-        y = 1/2 - d
-        xs.append(x)
-        ys.append(y)
-        plt.gca().annotate(label, (x,y))
-    plt.scatter(xs, ys)
-
-    plt.show()
 
 
 def get_vector_between_xyzs_from_point_codes(pc0, pc1):
@@ -92,52 +32,6 @@ def vectors_between_pairs_of_point_codes_are_parallel(pair0, pair1):
     cross = np.cross(v0, v1)
     mag = np.linalg.norm(cross)
     return mag < 1e-9
-
-
-def get_peel_coordinates_of_point_codes_on_face(pcs, face_name):
-    ls = []
-    ds = []
-    for pc in pcs:
-        xyz = anc.get_xyz_from_point_code_using_ancestry(pc, as_array=True)
-        try:
-            l, d = pe.get_peel_coordinates_of_point_from_face_name(xyz, face_name, allow_one=True)
-        except mu.InvalidVectorDecompositionException:
-            l, d = None, None
-        ls.append(l)
-        ds.append(d)
-    return ls, ds
-
-
-def plot_point_codes_on_half_peel_face_planes(pcs, face_name, with_labels=True):
-    ls, ds = get_peel_coordinates_of_point_codes_on_face(pcs, face_name=face_name)
-    ls_to_plot = []
-    ds_to_plot = []
-    labels = []
-    for pc, l, d in zip(pcs, ls, ds):
-        if l is None:
-            assert d is None
-            continue
-        ls_to_plot.append(l)
-        ds_to_plot.append(d)
-        if with_labels:
-            labels.append(pc)
-    plot_peel_coordinates_on_one_half_peel(ls, ds, labels=labels if with_labels else None)
-
-
-def plot_point_codes_on_sphere_3d(pcs, with_labels=True):
-    xyzs = [anc.get_xyz_from_point_code_using_ancestry(pc, as_array=False) for pc in pcs]
-    xs, ys, zs = zip(*xyzs)
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    ax.scatter(xs, ys, zs)
-    ax.set(
-        xticklabels=[],
-        yticklabels=[],
-        zticklabels=[],
-    )
-    if with_labels:
-        for pc, x, y, z in zip(pcs, xs, ys, zs):
-            ax.text(x, y, z, pc)
-    plt.show()
 
 
 def get_stepwise_path_distances_and_angles(xs, ys):
@@ -200,7 +94,7 @@ if __name__ == "__main__":
     ls = [0, 0, 0, 0.5, 0.5, 0.5, 1, 1, 1]
     ds = [0, 0.5, 1] * 3
     labels = ["C", "C3", "L", "C1", "C2", "L1", "A", "K1", "K"]
-    plot_peel_coordinates_on_one_half_peel(ls, ds, labels)
+    ppl.plot_points_by_peel_coordinates_on_one_half_peel(ls, ds, labels)
 
     # # test if line segments are parallel on the face plane
     # reference_pair_l = ["C", "A"]
@@ -238,12 +132,9 @@ if __name__ == "__main__":
     # plot_point_codes_on_sphere_3d(pcs, with_labels=True)
 
     # observe how the points lie along lines or curves on the face
-    pcs = ["C"]
-    for i in range(6):
-        pcs = reduce(lambda x,y: x+y, [[pc + x for x in "0123"] for pc in pcs])
-    pcs = sorted(set(pca.strip_trailing_zeros(pc) for pc in pcs))
-    plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
-    plot_point_codes_on_sphere_3d(pcs, with_labels=False)
+    pcs = gpc.get_all_point_codes_from_ancestor_at_iteration(ancestor_pc="C", iterations=6)
+    ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
+    ppl.plot_point_codes_on_sphere_3d(pcs, with_labels=False)
 
     # try a "line" of points only going in one icosa direction
     pc_init, pc_final, direction = "C101010101", "C202020202", 3  # alternating staircase fractal
@@ -252,41 +143,8 @@ if __name__ == "__main__":
     # pc_init, pc_final, direction = "C02020202", "K10101011", 1  # alternating staircase fractal
     # pc_init, pc_final, direction = "C0101010101", "K0101010101", 2  # alternating staircase fractal
     # pc_init, pc_final, direction = "C0100011001", "K0100011001", 2  # mostly straight with some abrupt jumps and looking a little similar to the staircase
-    pcs = [pc_init]
-    while pcs[-1] != pc_final:
-        pcs.append(pca.add_direction_to_point_code(pcs[-1], direction))
-    plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
-    ls, ds = get_peel_coordinates_of_point_codes_on_face(pcs, face_name="CAKX")
+    pcs = get_point_path(pc_init, pc_final, direction)
+    ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
+    ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(pcs, face_name="CAKX")
     distances, angles = get_stepwise_path_distances_and_angles(ls, ds)
-    plt.subplot(2, 1, 1)
-    plt.plot(distances)
-    plt.ylabel("distance")
-    plt.subplot(2, 1, 2)
-    plt.plot(angles * 180/np.pi)
-    plt.ylabel("deg")
-    plt.show()
-
-
-    # name of original method for locating child points: Bisection From Parents (or maybe just "Bisection" for short)
-
-    # TODO one idea for redoing where the child points are:
-    # - method name: Corrected Plane Gridding
-    # - use peel coordinates as primary
-    # - but dilate where the l and d proportions are by using the trig formula for lp (so the same delta l moves less near the center and more near the corners)
-    # - draw triangular grid on the face plane based solely on these lp points on the three edges, so the grid lines are straight on the face plane
-    # - project the resulting points to the sphere
-    # - see what they look like and how far apart they are, hopefully the lp adjustment makes them relatively uniformly spaced at least within a face
-    # - and hopefully the lines put the points in neat rows on the sphere surface, and most or all refraction occurs at actual face boundaries
-    # - (want no Sierpinski artifacts in the distribution of points within a face)
-
-    # TODO another idea for child point locations:
-    # - method name: Arc Gridding
-    # - divide the sphere edges into n equal segments based on which iteration you are at (e.g. 8 segments)
-    # - then connect corresponding points along these edges using great circle paths
-    # - hopefully the gc paths meet at sixfold vertices
-    # - and I suspect this method is equivalent to Grid Distortion
-
-    # the method of doing the gridding on the face plane uniformly and then projecting that out onto the sphere, introducing distortion,
-    # - could be called Uncorrected Plane Gridding
-
-    
+    plot_distances_and_angles(distances, angles)
