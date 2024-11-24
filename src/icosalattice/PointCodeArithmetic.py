@@ -11,6 +11,9 @@ NORTHERN_RING = ["C", "E", "G", "I", "K"]
 SOUTHERN_RING = ["D", "F", "H", "J", "L"]
 
 
+class DisallowedDirectionException(Exception): pass
+
+
 def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
     if pc is None:
         return None
@@ -31,123 +34,133 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
     if fix_edge_polarity and pc in ["A", "B"]:
         # fix_edge_polarity indicates that we are in top-level call
         # it's okay to do like A + 3 = K in intermediate calls (with reversed K-A edge)
-        raise ValueError(f"directions from poles are ill-defined: {pc=}, {x=}")
+        # raise DisallowedDirectionException(f"directions from poles are ill-defined: {pc=}, {x=}")
+        res = None
     elif len(pc) == 1:
-        res = initial_points_results[pc][x]
+        res = initial_points_results[pc].get(x)
         # print(f"case: initial point; {res=}")
     else:
         on_edge_CA = head == "C" and all(y in ["0", "1"] for y in tail)
         on_edge_DB = head == "D" and all(y in ["0", "3"] for y in tail)
 
-        verify_valid_direction(pc, x)
+        try:
+            verify_valid_direction(pc, x)
+            valid_direction = True
+        except DisallowedDirectionException:
+            res = None
+            valid_direction = False
 
-        if x == 2:
-            y1 = add1(pc)
-            y13 = add3(y1)
-            y3 = add3(pc)
-            y31 = add1(y3)
-            # print(f"{pc} +1+3 = {y13} ; {pc} +3+1 = {y31}")
-            assert y13 == y31
-            res = y13
-            if res[0] in ["A", "B"]:
-                # we moved off the left or bottom edge of CD peel
-                reference_peel = "KL"
-            # print(f"case: x=2; {res=}")
-        
-        # special case of C1 - 2 = E2, calculating this as -1-3 gives None
-        # similarly C1 - 3 = E1; D3 - 2 = F2; D3 - 1 = F3
-        elif pc == "C1" and x == -2:
-            res = "E2"
-            # print(f"case: C1 - 2; {res=}")
-        elif pc == "C1" and x == -3:
-            res = "E1"
-            # print(f"case: C1 - 3; {res=}")
-        elif pc == "D3" and x == -2:
-            res = "F2"
-            # print(f"case: D3 - 2; {res=}")
-        elif pc == "D3" and x == -1:
-            res = "F3"
-            # print(f"case: D3 - 1; {res=}")
-
-        # refraction cases
-        elif on_edge_CA and x == -3:
-            if all(y == "0" for y in tail):
-                # we will get extraneous solution where p-3 = p-2, but p-3 should be undefined
-                res = None
-                # print(f"case: on edge CA, x=-3, tail all zero; {res=}")
-            else:
-                new_head = "E"
-                new_tail = replace_zeros_with_twos(tail)
-                res = new_head + new_tail
-                # print(f"case: on edge CA, x=-3, tail not all zero; {res=}")
-        elif on_edge_CA and x == -2:
-            # do the refracting last, so do -2 = -1-3 NOT -3-1
-            y1 = sub1(pc)
-            if y1[0] == "C" and all (y == "0" for y in y1[1:]):
-                # since C lacks the -3 direction, 
-                # but we are subtracting 2 from something on the edge,
-                # we can use p-3+3 due to refraction
-                res = add3(sub3(pc))
-                # raise ValueError(f"ran across pc-1 = C0* in input {pc}{x:+}, will get pc-1-3 = None, need to fix")
-            else:
-                y13 = sub3(y1)
+        if valid_direction:
+            if x == 2:
+                y1 = add1(pc)
+                y13 = add3(y1)
+                y3 = add3(pc)
+                y31 = add1(y3)
+                # print(f"{pc} +1+3 = {y13} ; {pc} +3+1 = {y31}")
+                assert y13 == y31
                 res = y13
-            # print(f"case: on edge CA, x=-2; {res=}")
-        elif on_edge_DB and x == -1:
-            if all(y == "0" for y in tail):
-                # we will get extraneous solution where p-1 = p-2, but p-3 should be undefined
-                res = None
-                # print(f"case: on edge DB, x=-1, tail all zero; {res=}")
-            else:
-                new_head = "F"
-                new_tail = replace_zeros_with_twos(tail)
-                res = new_head + new_tail
-                # print(f"case: on edge DB, x=-1, tail not all zero; {res=}")
-        elif on_edge_DB and x == -2:
-            # do the refracting last, so do -2 = -3-1 NOT -1-3
-            y3 = sub3(pc)
-            if y3[0] == "D" and all (y == "0" for y in y3[1:]):
-                # since D lacks the -1 direction, 
-                # but we are subtracting 2 from something on the edge,
-                # we can use p-1+1 due to refraction
-                res = add1(sub1(pc))
-                # raise ValueError(f"ran across pc-3 = D0* in input {pc}{x:+}, will get pc-3-1 = None, need to fix")
-            y31 = sub1(y3)
-            res = y31
-            # print(f"case: on edge DB, x=-2; {res=}")
+                if res[0] in ["A", "B"]:
+                    # we moved off the left or bottom edge of CD peel
+                    reference_peel = "KL"
+                # print(f"case: x=2; {res=}")
+            
+            # special case of C1 - 2 = E2, calculating this as -1-3 gives None
+            # similarly C1 - 3 = E1; D3 - 2 = F2; D3 - 1 = F3
+            elif pc == "C1" and x == -2:
+                res = "E2"
+                # print(f"case: C1 - 2; {res=}")
+            elif pc == "C1" and x == -3:
+                res = "E1"
+                # print(f"case: C1 - 3; {res=}")
+            elif pc == "D3" and x == -2:
+                res = "F2"
+                # print(f"case: D3 - 2; {res=}")
+            elif pc == "D3" and x == -1:
+                res = "F3"
+                # print(f"case: D3 - 1; {res=}")
 
-        elif x == -2:
-            # general case for -2, no refraction
-            y1 = sub1(pc)
-            y13 = sub3(y1)
-            y3 = sub3(pc)
-            y31 = sub1(y3)
-            # print(f"{pc} -1-3 = {y13} ; {pc} -3-1 = {y31}")
-            assert y13 == y31
-            res = y13
-            # print(f"case: x=-2, not on reversed edge; {res=}")
-        else:
-            direction_digit = abs(x)
-            plus = x > 0
-            overflow, new_tail = increment_binary_code(tail, direction_digit, plus)
-            
-            # overflow is used to change watershed by applying to the point letter
-            if overflow == 0:
-                new_head = head
-            elif overflow == 1:
-                assert plus, "shouldn't get positive overflow from subtracting"
-                new_head = add_direction_to_point_code(head, x, fix_edge_polarity=False)
-            elif overflow == -1:
-                assert not plus, "shouldn't get negative overflow from adding"
-                new_head = add_direction_to_point_code(head, x, fix_edge_polarity=False)
+            # refraction cases
+            elif on_edge_CA and x == -3:
+                if all(y == "0" for y in tail):
+                    # we will get extraneous solution where p-3 = p-2, but p-3 should be undefined
+                    res = None
+                    # print(f"case: on edge CA, x=-3, tail all zero; {res=}")
+                else:
+                    new_head = "E"
+                    new_tail = replace_zeros_with_twos(tail)
+                    res = new_head + new_tail
+                    # print(f"case: on edge CA, x=-3, tail not all zero; {res=}")
+            elif on_edge_CA and x == -2:
+                # do the refracting last, so do -2 = -1-3 NOT -3-1
+                y1 = sub1(pc)
+                if y1[0] == "C" and all (y == "0" for y in y1[1:]):
+                    # since C lacks the -3 direction, 
+                    # but we are subtracting 2 from something on the edge,
+                    # we can use p-3+3 due to refraction
+                    res = add3(sub3(pc))
+                    # raise ValueError(f"ran across pc-1 = C0* in input {pc}{x:+}, will get pc-1-3 = None, need to fix")
+                else:
+                    y13 = sub3(y1)
+                    res = y13
+                # print(f"case: on edge CA, x=-2; {res=}")
+            elif on_edge_DB and x == -1:
+                if all(y == "0" for y in tail):
+                    # we will get extraneous solution where p-1 = p-2, but p-3 should be undefined
+                    res = None
+                    # print(f"case: on edge DB, x=-1, tail all zero; {res=}")
+                else:
+                    new_head = "F"
+                    new_tail = replace_zeros_with_twos(tail)
+                    res = new_head + new_tail
+                    # print(f"case: on edge DB, x=-1, tail not all zero; {res=}")
+            elif on_edge_DB and x == -2:
+                # do the refracting last, so do -2 = -3-1 NOT -1-3
+                y3 = sub3(pc)
+                if y3[0] == "D" and all (y == "0" for y in y3[1:]):
+                    # since D lacks the -1 direction, 
+                    # but we are subtracting 2 from something on the edge,
+                    # we can use p-1+1 due to refraction
+                    res = add1(sub1(pc))
+                    # raise ValueError(f"ran across pc-3 = D0* in input {pc}{x:+}, will get pc-3-1 = None, need to fix")
+                y31 = sub1(y3)
+                res = y31
+                # print(f"case: on edge DB, x=-2; {res=}")
+
+            elif x == -2:
+                # general case for -2, no refraction
+                y1 = sub1(pc)
+                y13 = sub3(y1)
+                y3 = sub3(pc)
+                y31 = sub1(y3)
+                # print(f"{pc} -1-3 = {y13} ; {pc} -3-1 = {y31}")
+                assert y13 == y31
+                res = y13
+                # print(f"case: x=-2, not on reversed edge; {res=}")
             else:
-                raise ValueError(overflow)
-            
-            res = new_head + new_tail
-            if res[0] in ["A", "B"]:
-                # we moved off the left or bottom edge of CD peel
-                reference_peel = "KL"
-            # print(f"case: {x=}, not on reversed edge; {res=}")
+                direction_digit = abs(x)
+                plus = x > 0
+                overflow, new_tail = increment_binary_code(tail, direction_digit, plus)
+                
+                # overflow is used to change watershed by applying to the point letter
+                if overflow == 0:
+                    new_head = head
+                elif overflow == 1:
+                    assert plus, "shouldn't get positive overflow from subtracting"
+                    new_head = add_direction_to_point_code(head, x, fix_edge_polarity=False)
+                elif overflow == -1:
+                    assert not plus, "shouldn't get negative overflow from adding"
+                    new_head = add_direction_to_point_code(head, x, fix_edge_polarity=False)
+                else:
+                    raise ValueError(overflow)
+                
+                if new_head is None:
+                    res = None
+                else:
+                    res = new_head + new_tail
+                    if res[0] in ["A", "B"]:
+                        # we moved off the left or bottom edge of CD peel
+                        reference_peel = "KL"
+                    # print(f"case: {x=}, not on reversed edge; {res=}")
 
     # only fix the edge polarity at the very final result, 
     # but before reapplying offset (so we still know reference peel is whatever we set it to, usually CD)
@@ -209,7 +222,7 @@ def verify_valid_direction(pc, x):
     else:
         allowed_directions = [1, 2, 3, -1, -2, -3]
     if x not in allowed_directions:
-        raise ValueError(f"direction {x!r} from {pc=} is not allowed; allowed directions are {allowed_directions}")
+        raise DisallowedDirectionException(f"direction {x!r} from {pc=} is not allowed; allowed directions are {allowed_directions}")
 
 
 def increment_binary_code(tail, direction_digit, plus=True):

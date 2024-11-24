@@ -13,8 +13,8 @@ import icosalattice.PointCodeArithmetic as pca
 import icosalattice.MathUtil as mu
 import icosalattice.GeneratePointCodes as gpc
 import icosalattice.PlotPointLocations as ppl
-from icosalattice.PointPaths import get_point_path
-from icosalattice.PlotPaths import plot_distances_and_angles
+from icosalattice.PointPaths import get_point_path, get_stepwise_path_distances_and_angles_2d
+from icosalattice.PlotPaths import plot_distances_and_angles_2d
 
 
 
@@ -32,20 +32,6 @@ def vectors_between_pairs_of_point_codes_are_parallel(pair0, pair1):
     cross = np.cross(v0, v1)
     mag = np.linalg.norm(cross)
     return mag < 1e-9
-
-
-def get_stepwise_path_distances_and_angles(xs, ys):
-    # see how a path of points looks
-    # for qualitatively investigating what is going on with what should be lines or curves of points along a single direction path on a face plane
-    # (e.g., D from C100 to C200)
-    assert len(xs) == len(ys)
-    if len(xs) < 1:
-        raise ValueError("need at least 2 points")
-    dxs = np.diff(xs, n=1)
-    dys = np.diff(ys, n=1)
-    distances = (dxs**2 + dys**2)**0.5
-    angles = np.arctan2(dys, dxs)
-    return distances, angles
 
 
 
@@ -86,14 +72,16 @@ if __name__ == "__main__":
     #         else:
     #             print(f"{pair0} vs {pair1}: is NOT parallel")
     
+    func_pc_to_xyz = anc.get_xyz_from_point_code_using_ancestry
+
     # # plot the points used in the line segment tests, so I can look at where they actually are after distortion induced by projection onto the face plane
     # pcs = sorted(set(reduce(lambda x,y: x+y, [reference_pair_l, reference_pair_dl, reference_pair_d] + test_pairs_l + test_pairs_dl + test_pairs_d)))
-    # plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX")
+    # plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
     # plot_point_codes_on_sphere_3d(pcs, with_labels=True)
 
     # observe how the points lie along lines or curves on the face
     pcs = gpc.get_all_point_codes_from_ancestor_at_iteration(ancestor_pc="C", iterations=6)
-    ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
+    ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
     ppl.plot_point_codes_on_sphere_3d(pcs, with_labels=False)
 
     # try a "line" of points only going in one icosa direction
@@ -104,7 +92,7 @@ if __name__ == "__main__":
     # pc_init, pc_final, direction = "C0101010101", "K0101010101", 2  # alternating staircase fractal
     # pc_init, pc_final, direction = "C0100011001", "K0100011001", 2  # mostly straight with some abrupt jumps and looking a little similar to the staircase
     pcs = get_point_path(pc_init, pc_final, direction)
-    ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", with_labels=False)
-    ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(pcs, face_name="CAKX")
-    distances, angles = get_stepwise_path_distances_and_angles(ls, ds)
-    plot_distances_and_angles(distances, angles)
+    ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
+    ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
+    distances, angles = get_stepwise_path_distances_and_angles_2d(ls, ds)
+    plot_distances_and_angles_2d(distances, angles)

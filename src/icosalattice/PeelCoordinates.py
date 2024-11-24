@@ -90,7 +90,7 @@ def get_peel_coordinates_from_point_code(pc):
     return spc, l_coord, d_coord
 
 
-def get_xyz_from_peel_coordinates(starting_pc, l_coord, d_coord):
+def get_xyz_from_peel_coordinates(starting_pc, l_coord, d_coord, as_array=True):
     # take l_coord and d_coord at face value as linear proportions of the way through the half-peel
     if starting_pc in ["A", "B"]:
         assert l_coord == 0 and d_coord == 0, f"cannot have steps from a pole, but got spc={starting_pc}, l={l_coord}, d={d_coord}"
@@ -98,7 +98,7 @@ def get_xyz_from_peel_coordinates(starting_pc, l_coord, d_coord):
     assert 0 <= l_coord < 1 and 0 <= d_coord < 1, f"must have peel coords in interval [0, 1), but got l={l_coord}, d={d_coord}"
 
     if l_coord == 0 and d_coord == 0:
-        return sp.STARTING_POINTS[sp.STARTING_POINT_CODES.index(starting_pc)].xyz()
+        return sp.STARTING_POINTS[sp.STARTING_POINT_CODES.index(starting_pc)].xyz(as_array=as_array)
     
     fs = fc.get_faces_in_watershed_of_starting_point(starting_pc)
     face_name_to_xyzs = fc.get_face_corner_coordinates_xyz(as_array=True)
@@ -107,23 +107,23 @@ def get_xyz_from_peel_coordinates(starting_pc, l_coord, d_coord):
         # on upward-pointing face of this half-peel
         f ,= [x for x in fs if fc.get_directionality_of_face(x) == "up"]
         vertices_xyz = face_name_to_xyzs[f]
-        return get_xyz_from_peel_coordinates_on_upward_face(vertices_xyz, l_coord, d_coord)
+        return get_xyz_from_peel_coordinates_on_upward_face(vertices_xyz, l_coord, d_coord, as_array=as_array)
     elif d_coord > l_coord:
         # on downward-pointing face of this half-peel
         f ,= [x for x in fs if fc.get_directionality_of_face(x) == "down"]
         vertices_xyz = face_name_to_xyzs[f]
-        return get_xyz_from_peel_coordinates_on_downward_face(vertices_xyz, l_coord, d_coord)
+        return get_xyz_from_peel_coordinates_on_downward_face(vertices_xyz, l_coord, d_coord, as_array=as_array)
     else:
         # test both faces
         vertices_xyz1 = face_name_to_xyzs[fs[0]]
         vertices_xyz2 = face_name_to_xyzs[fs[1]]
-        xyz1 = get_xyz_from_peel_coordinates_on_upward_face(vertices_xyz1, l_coord, d_coord)
-        xyz2 = get_xyz_from_peel_coordinates_on_downward_face(vertices_xyz2, l_coord, d_coord)
+        xyz1 = get_xyz_from_peel_coordinates_on_upward_face(vertices_xyz1, l_coord, d_coord, as_array=as_array)
+        xyz2 = get_xyz_from_peel_coordinates_on_downward_face(vertices_xyz2, l_coord, d_coord, as_array=as_array)
         assert (abs(xyz1 - xyz2) < 1e-9).all(), f"{xyz1} != {xyz2}"
         return (xyz1 + xyz2)/2
 
 
-def get_xyz_from_peel_coordinates_on_upward_face(vertices_xyz, l_coord, d_coord):
+def get_xyz_from_peel_coordinates_on_upward_face(vertices_xyz, l_coord, d_coord, as_array=True):
     assert l_coord >= d_coord, f"upward face should have l >= d, but got l = {l_coord}, d = {d_coord}"
     xyz0, xyz1, xyz2, xyz3 = vertices_xyz
     assert xyz3 is None, f"vertices do not respect upward-pointing face polarity: {vertices_xyz}"
@@ -139,10 +139,15 @@ def get_xyz_from_peel_coordinates_on_upward_face(vertices_xyz, l_coord, d_coord)
     dxyz_on_plane = l_coefficient * l_vector + dl_coefficient * dl_vector
     xyz_on_plane = xyz0 + dxyz_on_plane
     xyz_on_sphere = xyz_on_plane / np.linalg.norm(xyz_on_plane)
-    return xyz_on_sphere
+
+    if as_array:
+        return xyz_on_sphere
+    else:
+        x,y,z = xyz_on_sphere
+        return (float(x), float(y), float(z))
 
 
-def get_xyz_from_peel_coordinates_on_downward_face(vertices_xyz, l_coord, d_coord):
+def get_xyz_from_peel_coordinates_on_downward_face(vertices_xyz, l_coord, d_coord, as_array=True):
     assert d_coord >= l_coord, f"downward face should have d >= l, but got l = {l_coord}, d = {d_coord}"
     xyz0, xyz1, xyz2, xyz3 = vertices_xyz
     assert xyz1 is None, f"vertices do not respect downward-pointing face polarity: {vertices_xyz}"
@@ -158,7 +163,12 @@ def get_xyz_from_peel_coordinates_on_downward_face(vertices_xyz, l_coord, d_coor
     dxyz_on_plane = dl_coefficient * dl_vector + d_coefficient * d_vector
     xyz_on_plane = xyz0 + dxyz_on_plane
     xyz_on_sphere = xyz_on_plane / np.linalg.norm(xyz_on_plane)
-    return xyz_on_sphere
+    
+    if as_array:
+        return xyz_on_sphere
+    else:
+        x,y,z = xyz_on_sphere
+        return (float(x), float(y), float(z))
 
 
 def get_peel_coordinates_from_xyz(xyz):
@@ -221,9 +231,9 @@ def get_peel_coordinates_from_xyz(xyz):
     return spc, l_coord, d_coord
 
 
-def get_xyz_from_point_code_using_peel_coordinates(pc):
+def get_xyz_from_point_code_using_peel_coordinates(pc, as_array=True):
     spc, l, d = get_peel_coordinates_from_point_code(pc)
-    xyz = get_xyz_from_peel_coordinates(spc, l, d)
+    xyz = get_xyz_from_peel_coordinates(spc, l, d, as_array=as_array)
     return xyz
 
 
@@ -299,11 +309,11 @@ def get_peel_coordinates_of_point_from_face_name(p_xyz, face_name, allow_one=Fal
     return l_coord, d_coord
 
 
-def get_peel_coordinates_of_point_codes_on_face(pcs, face_name):
+def get_peel_coordinates_of_point_codes_on_face(pcs, face_name, func_pc_to_xyz):
     ls = []
     ds = []
     for pc in pcs:
-        xyz = anc.get_xyz_from_point_code_using_ancestry(pc, as_array=True)
+        xyz = func_pc_to_xyz(pc, as_array=True)
         try:
             l, d = get_peel_coordinates_of_point_from_face_name(xyz, face_name, allow_one=True)
         except mu.InvalidVectorDecompositionException:

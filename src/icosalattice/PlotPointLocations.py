@@ -6,8 +6,8 @@ import icosalattice.CoordinatesByAncestry as anc
 
 
 
-def plot_point_codes_on_half_peel_face_planes(pcs, face_name, with_labels=True):
-    ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(pcs, face_name=face_name)
+def plot_point_codes_on_half_peel_face_planes(pcs, face_name, func_pc_to_xyz, with_labels=True):
+    ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(pcs, face_name=face_name, func_pc_to_xyz=func_pc_to_xyz)
     ls_to_plot = []
     ds_to_plot = []
     labels = []
@@ -29,7 +29,13 @@ def plot_point_codes_on_sphere_3d(pcs, with_labels=True):
 
 def plot_xyzs_on_sphere_3d(xyzs, labels=None):
     xs, ys, zs = zip(*xyzs)
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    fig = plt.figure()
+    ax = fig.add_subplot(projection="3d")
+    # ax.set_aspect("equal")  # works for 2d but not 3d
+    ax.set_box_aspect([1.0, 1.0, 1.0])  # this sets aspects equal for 3d
+    ax.set_xlim3d(-1.1, 1.1)
+    ax.set_ylim3d(-1.1, 1.1)
+    ax.set_zlim3d(-1.1, 1.1)
     ax.scatter(xs, ys, zs)
     ax.set(
         xticklabels=[],
