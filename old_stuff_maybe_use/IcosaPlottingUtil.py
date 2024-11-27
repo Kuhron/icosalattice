@@ -130,16 +130,6 @@ def plot_variable_interpolated_from_db(db, lns, var_to_plot, xyzg, resolution, s
     plot_variable_interpolated_from_dict(ln_to_val, xyzg, resolution, title=None, show=show)
 
 
-def plot_variable_interpolated_from_dict(ln_to_val, xyzg, resolution, title=None, show=True):
-    lns = list(ln_to_val.keys())
-    pcs = icm.get_point_codes_from_prefix_lookup_numbers(lns)
-    latlons = icm.get_latlons_from_point_codes(pcs, xyzg)
-    values = [ln_to_val.get(ln) for ln in lns]
-    plot_interpolated_data(latlons, values, lat_range=None, lon_range=None, n_lats=resolution, n_lons=resolution)
-    if show:
-        plt.show()
-
-
 def plot_variables_interpolated_from_db(db, lns, vars_to_plot, xyzg, resolution, show=False):
     print(f"plotting variables interpolated: {vars_to_plot}")
     n_plots = len(vars_to_plot)

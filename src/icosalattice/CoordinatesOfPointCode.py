@@ -43,6 +43,18 @@ METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ = {
     "corrected plane gridding": get_xyz_from_point_code_using_corrected_plane_gridding,
     # "arc gridding": lambda pc: NotImplemented,
 }
+CHOSEN_METHOD = "corrected plane gridding"
+
+
+def get_xyz_from_point_code(pc, as_array=True):
+    f = METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ[CHOSEN_METHOD]
+    return f(pc, as_array=as_array)
+
+
+def get_latlon_from_point_code(pc, as_array=True):
+    xyz = get_xyz_from_point_code(pc)
+    latlon = mcm.unit_vector_cartesian_to_latlon(*xyz, as_array=as_array)
+    return latlon
 
 
 def get_stats_about_point_placements(pc_to_xyz):
@@ -73,38 +85,36 @@ if __name__ == "__main__":
 
     # pcs = get_all_point_codes_at_iteration(iterations=5)
 
-    for method_name, func_pc_to_xyz in METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ.items():
-        print(f"getting xyz coordinates using {method_name!r} method")
-        xyzs = []
-        pc_to_xyz = {}
-        for pc in pcs:
-            xyz = func_pc_to_xyz(pc)
-            # print(f"{pc = }, {xyz = }")
-            xyzs.append(xyz)
-            pc_to_xyz[pc] = xyz
+    method_name = "corrected plane gridding"
+    func_pc_to_xyz = METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ[method_name]
+    print(f"getting xyz coordinates using {method_name!r} method")
+    xyzs = []
+    pc_to_xyz = {}
+    for pc in pcs:
+        xyz = func_pc_to_xyz(pc)
+        # print(f"{pc = }, {xyz = }")
+        xyzs.append(xyz)
+        pc_to_xyz[pc] = xyz
 
-        # get_stats_about_point_placements(pc_to_xyz)
+    # get_stats_about_point_placements(pc_to_xyz)
 
-        # TODO sanity checks for a given method:
-        # - the point's neighbors by adjacency must be the nearest neighbors
-        # TODO check if any of the methods creates the same results
+    # TODO sanity checks for a given method:
+    # - the point's neighbors by adjacency must be the nearest neighbors
+    # TODO check if any of the methods creates the same results
 
-        ppl.plot_xyzs_on_sphere_3d(xyzs, labels=None)
+    ppl.plot_xyzs_on_sphere_3d(xyzs, labels=None)
 
-        # plot a path
-        pc_init, pc_final, direction = "C101010101", "C202020202", 3
-        path_pcs = get_point_path(pc_init, pc_final, direction)
-        ppl.plot_point_codes_on_half_peel_face_planes(path_pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
-        ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(path_pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
-        distances, angles = get_stepwise_path_distances_and_angles_2d(ls, ds)
-        plot_distances_and_angles_2d(distances, angles)
+    # plot a path
+    # pc_init, pc_final, direction = "C101010101", "C202020202", 3
+    pc_init, pc_final, direction = "C1110000", "C2220000", 3
+    path_pcs = get_point_path(pc_init, pc_final, direction)
+    ppl.plot_point_codes_on_half_peel_face_planes(path_pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
+    ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(path_pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
+    distances, angles = get_stepwise_path_distances_and_angles_2d(ls, ds)
+    plot_distances_and_angles_2d(distances, angles)
 
-        path_xyzs = [func_pc_to_xyz(pc) for pc in path_pcs]
-        xs, ys, zs = zip(*path_xyzs)
-        distances, angles_xy, angles_xz, angles_yz = get_stepwise_path_distances_and_angles_3d(xs, ys, zs)
-        plot_distances_and_angles_3d(distances, angles_xy, angles_xz, angles_yz)
+    path_xyzs = [func_pc_to_xyz(pc) for pc in path_pcs]
+    xs, ys, zs = zip(*path_xyzs)
+    distances, angles_xy, angles_xz, angles_yz = get_stepwise_path_distances_and_angles_3d(xs, ys, zs)
+    plot_distances_and_angles_3d(distances, angles_xy, angles_xz, angles_yz)
 
-        print()
-        input("press enter to continue")
-        print()
-    print("done")

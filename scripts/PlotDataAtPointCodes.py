@@ -9,4 +9,4 @@ lines = [x.strip().split(",") for x in lines]
 pcs, vals = zip(*lines)
 vals = [float(x) for x in vals]
 
-latlons = ?
+print(pcs, vals)

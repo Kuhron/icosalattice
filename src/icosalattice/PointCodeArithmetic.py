@@ -31,7 +31,7 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
 
     # print(f"adding {x:+} to {pc}")
 
-    if fix_edge_polarity and pc in ["A", "B"]:
+    if fix_edge_polarity and pc[0] in ["A", "B"]:
         # fix_edge_polarity indicates that we are in top-level call
         # it's okay to do like A + 3 = K in intermediate calls (with reversed K-A edge)
         # raise DisallowedDirectionException(f"directions from poles are ill-defined: {pc=}, {x=}")
