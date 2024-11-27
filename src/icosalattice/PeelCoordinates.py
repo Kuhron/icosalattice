@@ -24,6 +24,7 @@ import icosalattice.CoordinatesByAncestry as anc
 # - - then can just look them up without recalculating them
 
 
+
 def get_peel_coordinates_of_point(p: UnitSpherePoint):
     raise Exception("linear assumption does not work; do not use this function until distortion has been worked out")
     p_xyz = p.xyz(as_array=True)
@@ -321,3 +322,4 @@ def get_peel_coordinates_of_point_codes_on_face(pcs, face_name, func_pc_to_xyz):
         ls.append(l)
         ds.append(d)
     return ls, ds
+

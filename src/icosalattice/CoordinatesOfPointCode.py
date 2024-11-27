@@ -38,8 +38,8 @@ from icosalattice.PointPaths import get_point_path, get_stepwise_path_distances_
 
 
 METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ = {
-    # "edge bisection": get_xyz_from_point_code_using_ancestry,
-    # "uncorrected plane gridding": pe.get_xyz_from_point_code_using_peel_coordinates,
+    "edge bisection": get_xyz_from_point_code_using_ancestry,
+    "uncorrected plane gridding": pe.get_xyz_from_point_code_using_peel_coordinates,
     "corrected plane gridding": get_xyz_from_point_code_using_corrected_plane_gridding,
     # "arc gridding": lambda pc: NotImplemented,
 }
@@ -69,7 +69,7 @@ def get_stats_about_point_placements(pc_to_xyz):
 if __name__ == "__main__":
     pcs = ["A", "B"]
     for spc in ["C", "E", "G", "I", "K"]:
-        pcs += get_all_point_codes_from_ancestor_at_iteration(ancestor_pc=spc, iterations=5)
+        pcs += get_all_point_codes_from_ancestor_at_iteration(ancestor_pc=spc, iterations=6)
 
     # pcs = get_all_point_codes_at_iteration(iterations=5)
 
