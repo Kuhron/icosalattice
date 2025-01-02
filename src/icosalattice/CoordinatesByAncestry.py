@@ -37,11 +37,11 @@ def get_xyz_of_point_code_using_parents(pc):
     return get_xyz_of_child_from_parent_xyzs(xyz0, xyz1)
 
 
-def get_parent_xyzs_from_point_code(pc):
+def get_parent_xyzs_from_point_code(pc, func_pc_to_xyz=get_xyz_from_point_code_using_ancestry):
     # print(f"getting parent xyzs for {pc=}")
     p0, p1 = get_parents_from_point_code(pc)
-    xyz0 = get_xyz_from_point_code_using_ancestry(p0)
-    xyz1 = get_xyz_from_point_code_using_ancestry(p1)
+    xyz0 = func_pc_to_xyz(p0)
+    xyz1 = func_pc_to_xyz(p1)
     # print(f"\n{pc=} has parents {p0} with {xyz0=} and {p1} with {xyz1=}")
     return xyz0, xyz1
 

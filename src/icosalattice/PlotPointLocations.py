@@ -7,7 +7,9 @@ import icosalattice.CoordinatesByAncestry as anc
 
 
 def plot_point_codes_on_half_peel_face_planes(pcs, face_name, func_pc_to_xyz, with_labels=True):
-    ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(pcs, face_name=face_name, func_pc_to_xyz=func_pc_to_xyz)
+    spcs, ls, ds = pe.get_adjusted_peel_coordinates_of_point_codes_on_face(pcs, face_name=face_name, func_pc_to_xyz=func_pc_to_xyz)
+    if len(set(spcs)) > 1:
+        raise ValueError("can't handle more than one starting point code right now")
     ls_to_plot = []
     ds_to_plot = []
     labels = []
@@ -22,8 +24,8 @@ def plot_point_codes_on_half_peel_face_planes(pcs, face_name, func_pc_to_xyz, wi
     plot_points_by_peel_coordinates_on_one_half_peel(ls, ds, labels=labels if with_labels else None)
 
 
-def plot_point_codes_on_sphere_3d(pcs, with_labels=True):
-    xyzs = [anc.get_xyz_from_point_code_using_ancestry(pc, as_array=False) for pc in pcs]
+def plot_point_codes_on_sphere_3d(pcs, func_pc_to_xyz, with_labels=True):
+    xyzs = [func_pc_to_xyz(pc, as_array=False) for pc in pcs]
     plot_xyzs_on_sphere_3d(xyzs, labels=pcs if with_labels else None)
 
 

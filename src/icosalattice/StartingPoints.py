@@ -143,7 +143,7 @@ def get_starting_point_neighbor_identity(point_number):
     d = {}
     assert type(point_number) is int, point_number
     assert 2 <= point_number < 12, "invalid point for neighbor identity: {}".format(point_number)
-    ring = get_starting_point_ring(point_number)
+    ring = get_starting_point_ring_from_point_number(point_number)
     if ring == "northern_ring":
         return ("L", "U")
     elif ring == "southern_ring":
@@ -152,7 +152,7 @@ def get_starting_point_neighbor_identity(point_number):
         raise ValueError("invalid ring {}".format(ring))
 
 
-def get_starting_point_ring(starting_point):
+def get_starting_point_ring_from_point_number(starting_point):
     original_points_order_by_name = get_original_points_order_by_name()
     ring_code = original_points_order_by_name[starting_point][:2]
     if ring_code == "NP":
@@ -165,6 +165,21 @@ def get_starting_point_ring(starting_point):
         return "southern_ring"
     else:
         raise ValueError("invalid ring code {}".format(ring_code))
+
+
+def get_starting_point_ring_from_point_code(pc):
+    # TODO fix up some of the old stuff in this module to phase out the old names (e.g. NRp72) and rely only on the point codes
+    # reduce hardcoding of point codes
+    if pc == "A":
+        return "north_pole"
+    elif pc == "B":
+        return "south_pole"
+    elif pc in ["C", "E", "G", "I", "K"]:
+        return "northern_ring"
+    elif pc in ["D", "F", "H", "J", "L"]:
+        return "southern_ring"
+    else:
+        raise ValueError(f"invalid starting point code: {pc}")
 
 
 @constant_maker("STARTING_DIRECTIONAL_DICT")

@@ -255,6 +255,17 @@ def get_unit_sphere_midpoint_from_xyz(xyz0, xyz1, as_array=True):
         return m
 
 
+def get_xyz_from_latlon(latlon, deg=True, as_array=True):
+    # alias function
+    return unit_vector_latlon_to_cartesian(*latlon, deg=deg, as_array=as_array)
+
+
+def get_latlon_from_xyz(xyz, deg=True, as_array=True):
+    # alias function
+    return unit_vector_cartesian_to_latlon(*xyz, deg=deg, as_array=as_array)
+
+
+
 # ---- UNSORTED STUFF BELOW ---- I have quarantined it so that I can draw on it if needed in icosalattice library, but won't be splitting files into part that lives in this repo and the rest that I don't need living in another file outside the repo ---- #
 
 """

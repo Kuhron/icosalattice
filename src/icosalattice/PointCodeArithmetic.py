@@ -363,6 +363,10 @@ def strip_trailing_zeros(s):
     return s
 
 
+def pad_with_trailing_zeros(s, iterations):
+    return s + "0"*(iterations + 1 - len(s))
+
+
 def enforce_no_trailing_zeros(pc):
     assert pc[-1] != "0", f"point code shouldn't have trailing zeros, got {pc}"
 

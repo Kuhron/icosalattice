@@ -32,9 +32,9 @@ while True:
         pc_orig = spc_expected + direction_expected
         print(f"point at middle of edge {edge_name}: {pc_orig}")
     
-    spc, l, d = pe.get_peel_coordinates_of_point(p)
+    spc, l, d = pe.get_adjusted_peel_coordinates_of_point(p)
     print(f"{spc = }, {l = }, {d = } from p")
-    pc = pe.get_point_code_from_peel_coordinates(spc, l, d)
+    pc = pe.get_point_code_from_raw_peel_coordinates(spc, l, d)
     print(f"{pc = } from peel coords")
     assert pc == pc_orig
 

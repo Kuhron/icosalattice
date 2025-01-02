@@ -1,4 +1,5 @@
 import icosalattice.StartingPoints as sp
+from icosalattice.PointCodeArithmetic import strip_trailing_zeros
 
 
 DIRECTION_CODE_TO_BASE_FOUR = {
@@ -19,19 +20,24 @@ def point_code_to_float(pc):
     return res
 
 
-def point_float_to_code(x):
+def point_float_to_code(x, max_iterations=128, allow_clipping=False):
     x_orig = x
     n, x = divmod(x, 1)
     s = sp.STARTING_POINT_FLOAT_TO_CODE[n]
     iterations = 0
-    max_iterations = 128
     while x > 0:
         x *= 4
         y,x = divmod(x, 1)
         s += DIRECTION_BASE_FOUR_TO_CODE[y]
         iterations += 1
         if iterations > max_iterations:
-            raise ValueError(f"invalid float representation of point code; remainder found: {x_orig}")
+            if allow_clipping:
+                print(f"max iterations reached for getting point code from float representation; clipping")
+                break
+            else:
+                raise ValueError(f"invalid float representation of point code; remainder found: {x_orig}")
+    
+    s = strip_trailing_zeros(s)
     return s
 
 

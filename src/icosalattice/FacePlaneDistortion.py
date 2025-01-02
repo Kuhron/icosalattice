@@ -10,8 +10,48 @@ import icosalattice.StartingPoints as sp
 
 
 ALPHA = icm.ANGLE_BETWEEN_VERTICES_RAD
-H = np.cos(ALPHA/2)  # height from center of sphere to middle of edge of face plane
+
+# H, the height from the center of the sphere to the middle of an edge of a face plane
+H = np.cos(ALPHA/2)
+assert np.isclose(H, (1/10 * (5 + 5**0.5))**0.5, atol=1e-9)  # found from putting decimal in Wolfram Alpha
+
+# W, the length of the edge of the face plane
+# = length of the straight line in 3D between two neighboring icosa vertices
 W = 2*np.sin(ALPHA/2)  # length of edge of face plane
+assert np.isclose(W, (2/5 * (5 - 5**0.5))**0.5, atol=1e-9)  # found from putting decimal in Wolfram Alpha
+
+# B, the length from a vertex to the middle of the opposite edge of a face plane
+B = (1/2 * 3**0.5) * W
+assert np.isclose(B, (3/10 * (5 - 5**0.5))**0.5, atol=1e-9)  # found from putting decimal in Wolfram Alpha
+# for WA: b = sqrt(3/10 * (5 - sqrt(5)))
+
+# G, the length from the center of the sphere to the centroid of a face plane
+# G = ((-(B**4) + 2*(B**2)*(H**2+1) - (H**2-1)**2) ** 0.5) / (2*B)
+
+G = (1 - ((B**2 - H**2 + 1)**2)/(4 * B**2))**0.5
+assert np.isclose(G, (1/15 * (5 + 2*5**0.5))**0.5, atol=1e-9)  # found from iteratively simplifying this expression on paper and in Wolfram Alpha
+
+# for WA: g = sqrt(1/15 * (5 + 2*sqrt(5)))
+#         g^2 = 1/15 * (5 + 2*sqrt(5))
+
+# check correctness of triangles (sphere center, A, face plane centroid) and (sphere center, mid(CK), face plane centroid)
+b1_from_wolfram = (B**2 - H**2 + 1)/(2*B)
+b1_from_triangle = (1 - G**2)**0.5
+b2 = B - b1_from_triangle
+assert np.isclose(b1_from_wolfram, b1_from_triangle, atol=1e-9)
+assert np.isclose(G**2 + b1_from_wolfram**2, 1, atol=1e-9)
+assert np.isclose(G**2 + b2**2, H**2, atol=1e-9)
+del b1_from_wolfram
+del b1_from_triangle
+del b2
+
+assert np.isclose(B/G, 1/2*(9-3*5**0.5), atol=1e-9)
+# for WA: b = g/2*(9-3*sqrt(5))
+
+# GAMMA, the angle from a corner of the face plane to its center (angle from perspective of the sphere center)
+GAMMA = np.arccos(G/1)
+assert np.isclose(GAMMA, np.arctan(3 - 5**0.5), atol=1e-9)  # found from putting decimal in Wolfram Alpha
+# for WA: gamma = arctan(3-sqrt(5))
 
 
 def get_x_from_theta(theta):
@@ -20,7 +60,7 @@ def get_x_from_theta(theta):
 
 
 def get_theta_from_x(x):
-    return ALPHA/2 - np.atan2(x/H)
+    return ALPHA/2 - np.atan2(x, H)
 
 
 def get_lp_from_theta(theta):
@@ -44,7 +84,7 @@ def get_theta_proportion_from_lp(lp):
 
 
 def get_lp_proportion_from_theta_proportion(a):
-    return get_lp_from_theta(a * ALPHA) / W
+    return get_lp_from_theta_proportion(a) / W
 
 
 def get_theta_proportion_from_lp_proportion(a):
@@ -53,6 +93,14 @@ def get_theta_proportion_from_lp_proportion(a):
 
 
 if __name__ == "__main__":
+    print(f"{ALPHA = }")
+    print(f"{W = }")
+    print(f"{H = }")
+    print(f"{B = }")
+    print(f"{G = }")
+    print(f"{GAMMA = }")
+
+
     p_a = sp.STARTING_POINTS[0]
     p_c = sp.STARTING_POINTS[2]
     p_k = sp.STARTING_POINTS[10]

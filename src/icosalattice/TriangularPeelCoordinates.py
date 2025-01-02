@@ -172,7 +172,9 @@ def is_positive_triangle_coordinate(x):
     return x is POS_ZERO or x > 0
 
 
-def distort_ld_using_lp_transformation_in_triangle_coordinates(l, d):
+def adjust_ld_using_lp_transformation_in_triangle_coordinates(l, d):
+    # turn raw ld into adjusted ld
+
     # print(f"{l=:.4f}, {d=:.4f}")
     a,c,k = get_ack_from_ld(l, d)
     # print(f"{a=:.4f}, {c=:.4f}, {k=:.4f}")
@@ -201,6 +203,38 @@ def distort_ld_using_lp_transformation_in_triangle_coordinates(l, d):
     return l2, d2
 
 
+def deadjust_ld_using_lp_transformation_in_triangle_coordinates(l, d):
+    # turn adjusted into raw
+
+    print(f"{l=:.4f}, {d=:.4f}")
+    a,c,k = get_ack_from_ld(l, d)
+    print(f"{a=:.4f}, {c=:.4f}, {k=:.4f}")
+    neg = is_negative_triangle_coordinate(a)
+    if neg:
+        assert is_negative_triangle_coordinate(c) and is_negative_triangle_coordinate(k)
+        a,c,k = -a, -c, -k
+    a2 = distort.get_theta_proportion_from_lp_proportion(a)
+    c2 = distort.get_theta_proportion_from_lp_proportion(c)
+    k2 = distort.get_theta_proportion_from_lp_proportion(k)
+    r = 2 / (a2 + c2 + k2)  # hack to try to get the new a,c,k to work with the triangular coordinates because they no longer add up to 2
+    a2 *= r
+    c2 *= r
+    k2 *= r
+    if neg:
+        a2, c2, k2 = -a2, -c2, -k2
+    print(f"{a2=:.4f}, {c2=:.4f}, {k2=:.4f}")
+    l2, d2 = get_ld_from_ack(a2, c2, k2)
+    print(f"{l2=:.4f}, {d2=:.4f}")
+    if l2 < 0:
+        assert abs(l2) < 1e-9, "negative l"
+        l2 = 0.0
+    if d2 < 0:
+        assert abs(d2) < 1e-9, "negative d"
+        d2 = 0.0
+    return l2, d2
+
+
+
 
 if __name__ == "__main__":
     while True:
@@ -224,7 +258,7 @@ if __name__ == "__main__":
             l = random.choice([0.0, 1.0])
             d = random.choice([0.0, 1.0])
         
-        l2, d2 = distort_ld_using_lp_transformation_in_triangle_coordinates(l, d)
+        l2, d2 = adjust_ld_using_lp_transformation_in_triangle_coordinates(l, d)
         
         # theta_proportions = np.linspace(0, 1, 101)
         # lp_proportions = distort.get_lp_proportion_from_theta_proportion(theta_proportions)

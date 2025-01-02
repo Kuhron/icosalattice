@@ -109,7 +109,7 @@ if __name__ == "__main__":
     pc_init, pc_final, direction = "C1110000", "C2220000", 3
     path_pcs = get_point_path(pc_init, pc_final, direction)
     ppl.plot_point_codes_on_half_peel_face_planes(path_pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
-    ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(path_pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
+    ls, ds = pe.get_adjusted_peel_coordinates_of_point_codes_on_face(path_pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
     distances, angles = get_stepwise_path_distances_and_angles_2d(ls, ds)
     plot_distances_and_angles_2d(distances, angles)
 

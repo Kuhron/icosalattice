@@ -15,20 +15,21 @@ import icosalattice.GeneratePointCodes as gpc
 import icosalattice.PlotPointLocations as ppl
 from icosalattice.PointPaths import get_point_path, get_stepwise_path_distances_and_angles_2d
 from icosalattice.PlotPaths import plot_distances_and_angles_2d
+from icosalattice.CoordinatesOfPointCode import METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ
 
 
 
-def get_vector_between_xyzs_from_point_codes(pc0, pc1):
-    xyz0 = anc.get_xyz_from_point_code_using_ancestry(pc0, as_array=True)
-    xyz1 = anc.get_xyz_from_point_code_using_ancestry(pc1, as_array=True)
+def get_vector_between_xyzs_from_point_codes(pc0, pc1, func_pc_to_xyz):
+    xyz0 = func_pc_to_xyz(pc0, as_array=True)
+    xyz1 = func_pc_to_xyz(pc1, as_array=True)
     return xyz1 - xyz0
 
 
-def vectors_between_pairs_of_point_codes_are_parallel(pair0, pair1):
+def vectors_between_pairs_of_point_codes_are_parallel(pair0, pair1, func_pc_to_xyz):
     pc00, pc01 = pair0
     pc10, pc11 = pair1
-    v0 = get_vector_between_xyzs_from_point_codes(pc00, pc01)
-    v1 = get_vector_between_xyzs_from_point_codes(pc10, pc11)
+    v0 = get_vector_between_xyzs_from_point_codes(pc00, pc01, func_pc_to_xyz)
+    v1 = get_vector_between_xyzs_from_point_codes(pc10, pc11, func_pc_to_xyz)
     cross = np.cross(v0, v1)
     mag = np.linalg.norm(cross)
     return mag < 1e-9
@@ -71,28 +72,50 @@ if __name__ == "__main__":
     #             print(f"{pair0} vs {pair1}: IS parallel")
     #         else:
     #             print(f"{pair0} vs {pair1}: is NOT parallel")
-    
-    func_pc_to_xyz = anc.get_xyz_from_point_code_using_ancestry
+
+    # CHOSEN_METHOD = "edge bisection"
+    # CHOSEN_METHOD = "uncorrected plane gridding"
+    CHOSEN_METHOD = "corrected plane gridding"
+    func_pc_to_xyz = METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ[CHOSEN_METHOD]
+
+    # observe how the points lie along lines or curves on the face
+    # pcs = gpc.get_all_point_codes_from_ancestor_at_iteration(ancestor_pc="C", iterations=6)
+    pcs = gpc.get_all_point_codes_on_face_at_iteration(face_name="CAKX", iterations=2, with_edges=True, with_trailing_zeros=True)
+    print(len(pcs))
+    input("check")
+    ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
+
+    pcs2 = reduce((lambda x,y: x+y), [gpc.get_all_point_codes_from_ancestor_at_iteration(ancestor_pc=apc, iterations=6) for apc in "CEGIK"]) + ["A"]
+    ppl.plot_point_codes_on_sphere_3d(pcs2, func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
+
+    # TODO write a function that maps from an idealized face plane triangle (ACK centered on the origin)
+    # - to an idealized sphere surface section (ACK where the vertices are centered on the origin and it bows upward in the z direction)
+    # - and plot some points on both of those views
+    # - there should only be one such mapping between the sphere surface and the face plane: the one defined by projection to/from the sphere center
+
+    # TODO write a function that maps from the triangle to itself subject to the constraints that:
+    # - it is one-to-one
+    # - it is symmetric for any of the symmetries of the triangle (D3 group): 120 deg turns about the centroid, reflections
+    # - things that map to themselves: the vertices, the centroid, the midpoints of the three edges
+    # - the edges also map to themselves (but not necessarily pointwise, and in fact they shouldn't: there needs to be distortion between vertex and midpoint)
+    # - there can be many such functions, play with them and see how the points look on the sphere surface when plotted there
 
     # # plot the points used in the line segment tests, so I can look at where they actually are after distortion induced by projection onto the face plane
     # pcs = sorted(set(reduce(lambda x,y: x+y, [reference_pair_l, reference_pair_dl, reference_pair_d] + test_pairs_l + test_pairs_dl + test_pairs_d)))
     # plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
     # plot_point_codes_on_sphere_3d(pcs, with_labels=True)
 
-    # observe how the points lie along lines or curves on the face
-    pcs = gpc.get_all_point_codes_from_ancestor_at_iteration(ancestor_pc="C", iterations=6)
-    ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
-    ppl.plot_point_codes_on_sphere_3d(pcs, with_labels=False)
 
     # try a "line" of points only going in one icosa direction
-    pc_init, pc_final, direction = "C101010101", "C202020202", 3  # alternating staircase fractal
+    pc_init, pc_final, direction = "C010100000", "K010100000", 2
+    # with func_pc_to_xyz from ancestry (edge bisection), we get weird fractals such as the "alternating staircase fractal"
     # pc_init, pc_final, direction = "C010000000", "K010000000", 2  # three straight segments
     # pc_init, pc_final, direction = "C010000001", "K010000001", 2  # three straight segments with spike fractal
     # pc_init, pc_final, direction = "C02020202", "K10101011", 1  # alternating staircase fractal
     # pc_init, pc_final, direction = "C0101010101", "K0101010101", 2  # alternating staircase fractal
     # pc_init, pc_final, direction = "C0100011001", "K0100011001", 2  # mostly straight with some abrupt jumps and looking a little similar to the staircase
-    pcs = get_point_path(pc_init, pc_final, direction)
+    pcs = get_point_path(pc_init, pc_final, direction)[:-1]
     ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
-    ls, ds = pe.get_peel_coordinates_of_point_codes_on_face(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
+    spcs, ls, ds = pe.get_adjusted_peel_coordinates_of_point_codes_on_face(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
     distances, angles = get_stepwise_path_distances_and_angles_2d(ls, ds)
     plot_distances_and_angles_2d(distances, angles)
