@@ -4,7 +4,7 @@ from functools import reduce
 import icosalattice.Iterations as it
 import icosalattice.PointCodeArithmetic as pca
 import icosalattice.StartingPoints as sp
-from icosalattice.Faces import FACE_NAMES, get_directionality_of_face
+from icosalattice.Faces import FACE_NAMES, get_directionality_of_face, select_point_codes_on_face
 
 
 
@@ -40,6 +40,7 @@ def get_all_point_codes_on_face_at_iteration(face_name, iterations, with_edges=T
     # start off with getting the normal ancestors of the point code which are on this face
     # we are going to throw away half of them, which can be optimized out later if needed
     pcs = get_all_point_codes_from_ancestor_at_iteration(ancestor_pc=p0, iterations=iterations, with_trailing_zeros=with_trailing_zeros)
+    pcs = select_point_codes_on_face(pcs, face_name)
 
     if with_edges:
         # add missing edges and vertices

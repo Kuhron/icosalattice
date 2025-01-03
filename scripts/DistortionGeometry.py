@@ -82,6 +82,7 @@ if __name__ == "__main__":
     # pcs = gpc.get_all_point_codes_from_ancestor_at_iteration(ancestor_pc="C", iterations=6)
     pcs = gpc.get_all_point_codes_on_face_at_iteration(face_name="CAKX", iterations=2, with_edges=True, with_trailing_zeros=True)
     print(len(pcs))
+    print(pcs)
     input("check")
     ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
 

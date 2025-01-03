@@ -375,19 +375,15 @@ def get_adjusted_ld_of_point_on_face(p_xyz, face_name, allow_one=False):
 
 
 def get_adjusted_peel_coordinates_of_point_codes_on_face(pcs, face_name, func_pc_to_xyz):
-    spcs = []
     ls = []
     ds = []
     for pc in pcs:
-        spc = pc[0]
-        assert spc in sp.STARTING_POINT_CODES
         xyz = func_pc_to_xyz(pc, as_array=True)
         try:
             l, d = get_adjusted_ld_of_point_on_face(xyz, face_name, allow_one=True)
         except mu.InvalidVectorDecompositionException:
             l, d = None, None
-        spcs.append(spc)
         ls.append(l)
         ds.append(d)
-    return spcs, ls, ds
-
+    
+    return ls, ds

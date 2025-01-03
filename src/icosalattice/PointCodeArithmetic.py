@@ -11,6 +11,7 @@ NORTHERN_RING = ["C", "E", "G", "I", "K"]
 SOUTHERN_RING = ["D", "F", "H", "J", "L"]
 
 
+
 class DisallowedDirectionException(Exception): pass
 
 

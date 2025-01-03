@@ -8,6 +8,8 @@ from icosalattice.ConstantMakerDecorator import constant_maker
 # constants that can be defined before functions
 MID_LAT_DEG = math.atan(1/2) * 180/math.pi
 STARTING_POINT_CODES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+POLES = ["A", "B"]
+NON_POLES = [x for x in STARTING_POINT_CODES if x not in POLES]
 
 # for float representation of point codes
 STARTING_POINT_CODE_TO_FLOAT = {pc: float(i) for i, pc in enumerate(STARTING_POINT_CODES)}

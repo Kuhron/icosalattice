@@ -1,6 +1,6 @@
 import icosalattice.StartingPoints as sp
 import icosalattice.MapCoordinateMath as mcm
-import warnings
+import icosalattice.PointCodeArithmetic as pca
 
 
 FACE_NAMES = [
@@ -122,3 +122,40 @@ def get_faces_in_watershed_of_starting_point(spc):
     assert len(fs) == 2, fs
     return fs
 
+
+def get_faces_of_point_code(pc):
+    pc = "".join(x for x in pc if x != "0")  # removing all zeros shouldn't affect the faces it's on
+    if len(pc) == 1:
+        assert pc in sp.STARTING_POINT_CODES
+        return [f for f in FACE_NAMES if pc in f]
+    
+    spc = pc[0]
+    nums = pc[1:]
+    spd = sp.STARTING_DIRECTIONAL_DICT
+    if len(set(nums)) == 1:
+        # only went in one direction, so point is on an edge
+        n = nums[0]
+        edge = spc + spd[spc][n]
+        return [f for f in FACE_NAMES if edge[0] in f and edge[1] in f]
+    else:
+        # otherwise, the first non-2 direction determines the face (which you can no longer leave once you're on it)
+        nums = [x for x in nums if x != "2"]
+        x = nums[0]
+        if x == "1":
+            p0 = spc
+            p1 = spd[spc]["1"]
+            p2 = spd[spc]["2"]
+            p3 = "X"
+        elif x == "3":
+            p0 = spc
+            p1 = "X"
+            p2 = spd[spc]["2"]
+            p3 = spd[spc]["3"]
+        else:
+            raise ValueError(f"bad direction: {x}")
+        f = p0 + p1 + p2 + p3
+        return [f]
+
+
+def select_point_codes_on_face(pcs, face_name):
+    return [pc for pc in pcs if face_name in get_faces_of_point_code(pc)]

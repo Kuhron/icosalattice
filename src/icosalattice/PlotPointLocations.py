@@ -7,9 +7,7 @@ import icosalattice.CoordinatesByAncestry as anc
 
 
 def plot_point_codes_on_half_peel_face_planes(pcs, face_name, func_pc_to_xyz, with_labels=True):
-    spcs, ls, ds = pe.get_adjusted_peel_coordinates_of_point_codes_on_face(pcs, face_name=face_name, func_pc_to_xyz=func_pc_to_xyz)
-    if len(set(spcs)) > 1:
-        raise ValueError("can't handle more than one starting point code right now")
+    ls, ds = pe.get_adjusted_peel_coordinates_of_point_codes_on_face(pcs, face_name=face_name, func_pc_to_xyz=func_pc_to_xyz)
     ls_to_plot = []
     ds_to_plot = []
     labels = []
