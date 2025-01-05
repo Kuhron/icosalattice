@@ -1,26 +1,35 @@
 # generic math functions that don't belong better somewhere else
 
-
+import math
 import numpy as np
 
 
-def round_off_unwanted_float_precision(x):
+
+def round_off_unwanted_float_precision(x, epsilon=1e-9, min_abs=1e-12):
     # if x has a huge gap in order of magnitude between its second-least-significant digit and its least-significant
     # then the last one is likely float crap
-    eps = 1e-9
-
+    
+    # x is zero
     if x == 0:
+        return 0.0
+    if abs(x) < min_abs:
+        return 0.0
+    
+    # x has no float crap beyond the precision we want
+    if x % epsilon == 0:
         return x
-    if x % eps == 0:
-        return x
+    
+    neg = x < 0
+    if neg:
+        x = -x
     
     a = 1
     while x < 1:
         a *= 2
         x *= 2
     
-    rem = x % eps
-    rem_over_eps = rem / eps
+    rem = x % epsilon
+    rem_over_eps = rem / epsilon
     # print(x, rem_over_eps)
     if rem_over_eps > 1 - 1e-4:
         # we need to ADD a small amount, round x up
@@ -32,7 +41,12 @@ def round_off_unwanted_float_precision(x):
     else:
         # keep the precision
         x2 = x
-    return x2/a  # rescale since we multiplied it up
+    
+    res = x2/a  # rescale since we multiplied it up
+    if neg:
+        return -res
+    else:
+        return res
 
 
 def get_vector_decomposition_coefficients(v, v1, v2):
@@ -63,6 +77,36 @@ def get_vector_decomposition_coefficients(v, v1, v2):
     a1 = float(a1)
     a2 = float(a2)
     return a1, a2
+
+
+def mod(x, y, map_zero_up=False):
+    m = x % y
+    if map_zero_up and m == 0:
+        return y
+    else:
+        return m
+
+
+def zigzag(x, a):
+    # write logic only for a=1 case for simplicity and comprehensibility
+    x /= a
+
+    n = math.floor(x)
+    n_odd = n % 2 == 1
+    res = mod(x * (-1)**n, 1, map_zero_up=n_odd)
+
+    res *= a
+    return res
+
+
+def zigzag_inverse(x, a, n):
+    # write logic only for a=1 case for simplicity and comprehensibility
+    x /= a
+
+    res = x * (-1)**n + n + mod(n, 2)
+
+    res *= a
+    return res
 
 
 class InvalidVectorDecompositionException(Exception): pass

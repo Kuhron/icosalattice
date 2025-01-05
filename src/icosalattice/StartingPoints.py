@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 import icosalattice.MapCoordinateMath as mcm
 from icosalattice.UnitSpherePoint import UnitSpherePoint
@@ -102,7 +103,12 @@ def get_starting_points():
     for point_number, p_name in enumerate(original_points_order_by_name):
         point_index = len(ordered_points)
         p_latlon = icosahedron_original_points_latlon[p_name]
-        p_xyz = mcm.unit_vector_latlon_to_cartesian(*p_latlon)
+        if point_number == 0:
+            p_xyz = np.array([0.0, 0.0, 1.0])  # avoid float rounding
+        elif point_number == 1:
+            p_xyz = np.array([0.0, 0.0, -1.0])  # avoid float rounding
+        else:
+            p_xyz = mcm.unit_vector_latlon_to_cartesian(*p_latlon)
         coords_dict = {"xyz": p_xyz, "latlondeg": p_latlon}
         usp = UnitSpherePoint(coords_dict, point_number)
         ordered_points.append(usp)

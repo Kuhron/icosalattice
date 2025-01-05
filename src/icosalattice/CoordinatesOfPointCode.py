@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 
 from icosalattice.CoordinatesByAncestry import get_xyz_from_point_code_using_ancestry
 from icosalattice.CoordinatesByPlaneGridding import get_xyz_from_point_code_using_corrected_plane_gridding
+from icosalattice.CoordinatesByRThetaAdjustment import get_xyz_from_point_code_using_r_theta_adjustment
 from icosalattice.GeneratePointCodes import get_all_point_codes_from_ancestor_at_iteration, get_all_point_codes_at_iteration
 import icosalattice.PeelCoordinates as pe
 import icosalattice.FacePlaneDistortion as distort
@@ -38,12 +39,12 @@ from icosalattice.PointPaths import get_point_path, get_stepwise_path_distances_
 
 
 METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ = {
-    "edge bisection": get_xyz_from_point_code_using_ancestry,
-    "uncorrected plane gridding": pe.get_xyz_from_point_code_using_peel_coordinates,
-    "corrected plane gridding": get_xyz_from_point_code_using_corrected_plane_gridding,
-    # "arc gridding": lambda pc: NotImplemented,
+    "ebs1": get_xyz_from_point_code_using_ancestry,  # "edge bisection"
+    "upg1": pe.get_xyz_from_point_code_using_peel_coordinates,  # "uncorrected plane gridding"
+    "cpg1": get_xyz_from_point_code_using_corrected_plane_gridding,  # "corrected plane gridding"
+    "rta1": get_xyz_from_point_code_using_r_theta_adjustment,  # "r-theta adjustment"
 }
-CHOSEN_METHOD = "corrected plane gridding"
+CHOSEN_METHOD = "rta1"
 
 
 def get_xyz_from_point_code(pc, as_array=True):

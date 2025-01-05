@@ -73,17 +73,15 @@ if __name__ == "__main__":
     #         else:
     #             print(f"{pair0} vs {pair1}: is NOT parallel")
 
-    # CHOSEN_METHOD = "edge bisection"
-    # CHOSEN_METHOD = "uncorrected plane gridding"
-    CHOSEN_METHOD = "corrected plane gridding"
+    # CHOSEN_METHOD = "ebs1"
+    # CHOSEN_METHOD = "upg1"
+    # CHOSEN_METHOD = "cpg1"
+    CHOSEN_METHOD = "rta1"
     func_pc_to_xyz = METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ[CHOSEN_METHOD]
 
     # observe how the points lie along lines or curves on the face
     # pcs = gpc.get_all_point_codes_from_ancestor_at_iteration(ancestor_pc="C", iterations=6)
-    pcs = gpc.get_all_point_codes_on_face_at_iteration(face_name="CAKX", iterations=2, with_edges=True, with_trailing_zeros=True)
-    print(len(pcs))
-    print(pcs)
-    input("check")
+    pcs = gpc.get_all_point_codes_on_face_at_iteration(face_name="CAKX", iterations=4, with_edges=True, with_trailing_zeros=True)
     ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
 
     pcs2 = reduce((lambda x,y: x+y), [gpc.get_all_point_codes_from_ancestor_at_iteration(ancestor_pc=apc, iterations=6) for apc in "CEGIK"]) + ["A"]
@@ -117,6 +115,6 @@ if __name__ == "__main__":
     # pc_init, pc_final, direction = "C0100011001", "K0100011001", 2  # mostly straight with some abrupt jumps and looking a little similar to the staircase
     pcs = get_point_path(pc_init, pc_final, direction)[:-1]
     ppl.plot_point_codes_on_half_peel_face_planes(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz, with_labels=False)
-    spcs, ls, ds = pe.get_adjusted_peel_coordinates_of_point_codes_on_face(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
+    ls, ds = pe.get_adjusted_peel_coordinates_of_point_codes_on_face(pcs, face_name="CAKX", func_pc_to_xyz=func_pc_to_xyz)
     distances, angles = get_stepwise_path_distances_and_angles_2d(ls, ds)
     plot_distances_and_angles_2d(distances, angles)

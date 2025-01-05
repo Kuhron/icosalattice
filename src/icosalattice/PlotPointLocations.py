@@ -23,7 +23,12 @@ def plot_point_codes_on_half_peel_face_planes(pcs, face_name, func_pc_to_xyz, wi
 
 
 def plot_point_codes_on_sphere_3d(pcs, func_pc_to_xyz, with_labels=True):
-    xyzs = [func_pc_to_xyz(pc, as_array=False) for pc in pcs]
+    xyzs = []
+    n = len(pcs)
+    for i, pc in enumerate(pcs):
+        # print(i, n, pc)
+        xyz = func_pc_to_xyz(pc, as_array=False)
+        xyzs.append(xyz)
     plot_xyzs_on_sphere_3d(xyzs, labels=pcs if with_labels else None)
 
 

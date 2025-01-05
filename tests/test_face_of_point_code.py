@@ -18,8 +18,6 @@ def test_face_of_point_code():
     starting_points, adj = sp.STARTING_POINTS_AND_ADJACENCY
     labels = sp.STARTING_POINT_CODES
 
-    # TODO rewrite test for using point code directly, not using xyz or latlon
-
     test_cases = {
         "G202202": ["GAEX", "GXEF"],
         "G230031": ["GXEF"],
