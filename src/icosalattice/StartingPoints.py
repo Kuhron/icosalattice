@@ -8,9 +8,13 @@ from icosalattice.ConstantMakerDecorator import constant_maker
 
 # constants that can be defined before functions
 MID_LAT_DEG = math.atan(1/2) * 180/math.pi
-STARTING_POINT_CODES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
-POLES = ["A", "B"]
-NON_POLES = [x for x in STARTING_POINT_CODES if x not in POLES]
+NORTH_POLE = "A"
+SOUTH_POLE = "B"
+POLES = [NORTH_POLE, SOUTH_POLE]
+NORTHERN_RING = ["C", "E", "G", "I", "K"]
+SOUTHERN_RING = ["D", "F", "H", "J", "L"]
+NON_POLES = sorted(NORTHERN_RING + SOUTHERN_RING)
+STARTING_POINT_CODES = sorted(POLES + NON_POLES)
 
 # for float representation of point codes
 STARTING_POINT_CODE_TO_FLOAT = {pc: float(i) for i, pc in enumerate(STARTING_POINT_CODES)}
@@ -182,9 +186,9 @@ def get_starting_point_ring_from_point_code(pc):
         return "north_pole"
     elif pc == "B":
         return "south_pole"
-    elif pc in ["C", "E", "G", "I", "K"]:
+    elif pc in NORTHERN_RING:
         return "northern_ring"
-    elif pc in ["D", "F", "H", "J", "L"]:
+    elif pc in SOUTHERN_RING:
         return "southern_ring"
     else:
         raise ValueError(f"invalid starting point code: {pc}")

@@ -15,7 +15,9 @@ SOUTHERN_RING = ["D", "F", "H", "J", "L"]
 class DisallowedDirectionException(Exception): pass
 
 
-def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
+def add_direction_to_point_code(pc, x, fix_edge_polarity=True, debug=False):
+    dprint = lambda *args, **kwargs: print(*args, **kwargs) if debug else None
+
     if pc is None:
         return None
 
@@ -30,7 +32,7 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
         "B": {1: "L"},  # for reversed L-B edge
     }
 
-    # print(f"adding {x:+} to {pc}")
+    dprint(f"adding {x:+} to {pc}")
 
     if fix_edge_polarity and pc[0] in ["A", "B"]:
         # fix_edge_polarity indicates that we are in top-level call
@@ -39,7 +41,7 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
         res = None
     elif len(pc) == 1:
         res = initial_points_results[pc].get(x)
-        # print(f"case: initial point; {res=}")
+        dprint(f"case: initial point; {res=}")
     else:
         on_edge_CA = head == "C" and all(y in ["0", "1"] for y in tail)
         on_edge_DB = head == "D" and all(y in ["0", "3"] for y in tail)
@@ -57,40 +59,40 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
                 y13 = add3(y1)
                 y3 = add3(pc)
                 y31 = add1(y3)
-                # print(f"{pc} +1+3 = {y13} ; {pc} +3+1 = {y31}")
+                dprint(f"{pc} +1+3 = {y13} ; {pc} +3+1 = {y31}")
                 assert y13 == y31
                 res = y13
                 if res[0] in ["A", "B"]:
                     # we moved off the left or bottom edge of CD peel
                     reference_peel = "KL"
-                # print(f"case: x=2; {res=}")
+                dprint(f"case: x=2; {res=}")
             
             # special case of C1 - 2 = E2, calculating this as -1-3 gives None
             # similarly C1 - 3 = E1; D3 - 2 = F2; D3 - 1 = F3
             elif pc == "C1" and x == -2:
                 res = "E2"
-                # print(f"case: C1 - 2; {res=}")
+                dprint(f"case: C1 - 2; {res=}")
             elif pc == "C1" and x == -3:
                 res = "E1"
-                # print(f"case: C1 - 3; {res=}")
+                dprint(f"case: C1 - 3; {res=}")
             elif pc == "D3" and x == -2:
                 res = "F2"
-                # print(f"case: D3 - 2; {res=}")
+                dprint(f"case: D3 - 2; {res=}")
             elif pc == "D3" and x == -1:
                 res = "F3"
-                # print(f"case: D3 - 1; {res=}")
+                dprint(f"case: D3 - 1; {res=}")
 
             # refraction cases
             elif on_edge_CA and x == -3:
                 if all(y == "0" for y in tail):
                     # we will get extraneous solution where p-3 = p-2, but p-3 should be undefined
                     res = None
-                    # print(f"case: on edge CA, x=-3, tail all zero; {res=}")
+                    dprint(f"case: on edge CA, x=-3, tail all zero; {res=}")
                 else:
                     new_head = "E"
                     new_tail = replace_zeros_with_twos(tail)
                     res = new_head + new_tail
-                    # print(f"case: on edge CA, x=-3, tail not all zero; {res=}")
+                    dprint(f"case: on edge CA, x=-3, tail not all zero; {res=}")
             elif on_edge_CA and x == -2:
                 # do the refracting last, so do -2 = -1-3 NOT -3-1
                 y1 = sub1(pc)
@@ -103,17 +105,17 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
                 else:
                     y13 = sub3(y1)
                     res = y13
-                # print(f"case: on edge CA, x=-2; {res=}")
+                dprint(f"case: on edge CA, x=-2; {res=}")
             elif on_edge_DB and x == -1:
                 if all(y == "0" for y in tail):
                     # we will get extraneous solution where p-1 = p-2, but p-3 should be undefined
                     res = None
-                    # print(f"case: on edge DB, x=-1, tail all zero; {res=}")
+                    dprint(f"case: on edge DB, x=-1, tail all zero; {res=}")
                 else:
                     new_head = "F"
                     new_tail = replace_zeros_with_twos(tail)
                     res = new_head + new_tail
-                    # print(f"case: on edge DB, x=-1, tail not all zero; {res=}")
+                    dprint(f"case: on edge DB, x=-1, tail not all zero; {res=}")
             elif on_edge_DB and x == -2:
                 # do the refracting last, so do -2 = -3-1 NOT -1-3
                 y3 = sub3(pc)
@@ -123,9 +125,10 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
                     # we can use p-1+1 due to refraction
                     res = add1(sub1(pc))
                     # raise ValueError(f"ran across pc-3 = D0* in input {pc}{x:+}, will get pc-3-1 = None, need to fix")
-                y31 = sub1(y3)
-                res = y31
-                # print(f"case: on edge DB, x=-2; {res=}")
+                else:
+                    y31 = sub1(y3)
+                    res = y31
+                dprint(f"case: on edge DB, x=-2; {res=}")
 
             elif x == -2:
                 # general case for -2, no refraction
@@ -133,10 +136,10 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
                 y13 = sub3(y1)
                 y3 = sub3(pc)
                 y31 = sub1(y3)
-                # print(f"{pc} -1-3 = {y13} ; {pc} -3-1 = {y31}")
+                dprint(f"{pc} -1-3 = {y13} ; {pc} -3-1 = {y31}")
                 assert y13 == y31
                 res = y13
-                # print(f"case: x=-2, not on reversed edge; {res=}")
+                dprint(f"case: x=-2, not on reversed edge; {res=}")
             else:
                 direction_digit = abs(x)
                 plus = x > 0
@@ -161,7 +164,7 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
                     if res[0] in ["A", "B"]:
                         # we moved off the left or bottom edge of CD peel
                         reference_peel = "KL"
-                    # print(f"case: {x=}, not on reversed edge; {res=}")
+                    dprint(f"case: {x=}, not on reversed edge; {res=}")
 
     # only fix the edge polarity at the very final result, 
     # but before reapplying offset (so we still know reference peel is whatever we set it to, usually CD)
@@ -172,7 +175,7 @@ def add_direction_to_point_code(pc, x, fix_edge_polarity=True):
         pc = apply_peel_offset(pc, peel_offset)
         res = apply_peel_offset(res, peel_offset)
         assert len(res) == len(pc), f"need same #iterations in result but got {pc} {x:+} = {res}"
-    # print(f"result: {pc} {x:+} = {res}\n")
+    dprint(f"result: {pc} {x:+} = {res}\n")
     return res
 
     # head = pc[0]
@@ -371,3 +374,13 @@ def pad_with_trailing_zeros(s, iterations):
 def enforce_no_trailing_zeros(pc):
     assert pc[-1] != "0", f"point code shouldn't have trailing zeros, got {pc}"
 
+
+def validate_point_code(pc):
+    if type(pc) is not str:
+        raise TypeError(f"point code must be string, but got {type(pc)}")
+    if pc[0] not in sp.STARTING_POINT_CODES:
+        raise Exception(f"point code must start with a valid vertex ({sp.STARTING_POINT_CODES}), but got {pc = }")
+    if not all(x in "0123" for x in pc[1:]):
+        raise Exception(f"all steps in point code must be '0', '1', '2', or '3', but got {pc = }")
+    if pc[0] in sp.POLES:
+        assert all(x == "0" for x in pc[1:]), f"poles cannot have children, but got {pc = }"

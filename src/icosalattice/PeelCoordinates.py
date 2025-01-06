@@ -296,10 +296,11 @@ def get_adjusted_peel_coordinates_from_xyz(xyz):
 
 
 def get_xyz_from_point_code_using_peel_coordinates(pc, as_array=True):
-    sld_raw = get_raw_peel_coordinates_from_point_code(pc)
-    sld_adjusted = get_adjusted_peel_coordinates_from_raw_peel_coordinates(sld_raw)
-    xyz = get_xyz_from_adjusted_peel_coordinates(sld_adjusted, as_array=as_array)
-    return xyz
+    raise DeprecationWarning("use functions in icosalattice.CoordinatesByPlaneGridding instead")
+    # sld_raw = get_raw_peel_coordinates_from_point_code(pc)
+    # sld_adjusted = get_adjusted_peel_coordinates_from_raw_peel_coordinates(sld_raw)
+    # xyz = get_xyz_from_adjusted_peel_coordinates(sld_adjusted, as_array=as_array)
+    # return xyz
 
 
 def get_point_code_from_xyz_using_peel_coordinates(xyz):

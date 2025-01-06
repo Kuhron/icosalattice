@@ -9,3 +9,9 @@ def get_xyz_from_point_code_using_corrected_plane_gridding(pc, as_array=True):
     l_modified, d_modified = adjust_ld_using_lp_transformation_in_triangle_coordinates(l_raw, d_raw)
     sld = spc, l_modified, d_modified
     return pe.get_xyz_from_adjusted_peel_coordinates(sld, as_array=as_array)
+
+
+def get_xyz_from_point_code_using_uncorrected_plane_gridding(pc, as_array=True):
+    # don't move the l and d coordinates, take them as-is from the point code
+    sld = pe.get_raw_peel_coordinates_from_point_code(pc)
+    return pe.get_xyz_from_adjusted_peel_coordinates(sld, as_array=as_array)

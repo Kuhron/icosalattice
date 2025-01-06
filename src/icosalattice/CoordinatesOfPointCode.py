@@ -25,7 +25,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from icosalattice.CoordinatesByAncestry import get_xyz_from_point_code_using_ancestry
-from icosalattice.CoordinatesByPlaneGridding import get_xyz_from_point_code_using_corrected_plane_gridding
+from icosalattice.CoordinatesByPlaneGridding import get_xyz_from_point_code_using_corrected_plane_gridding, get_xyz_from_point_code_using_uncorrected_plane_gridding
 from icosalattice.CoordinatesByRThetaAdjustment import get_xyz_from_point_code_using_r_theta_adjustment
 from icosalattice.GeneratePointCodes import get_all_point_codes_from_ancestor_at_iteration, get_all_point_codes_at_iteration
 import icosalattice.PeelCoordinates as pe
@@ -40,11 +40,11 @@ from icosalattice.PointPaths import get_point_path, get_stepwise_path_distances_
 
 METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ = {
     "ebs1": get_xyz_from_point_code_using_ancestry,  # "edge bisection"
-    "upg1": pe.get_xyz_from_point_code_using_peel_coordinates,  # "uncorrected plane gridding"
+    "upg1": get_xyz_from_point_code_using_uncorrected_plane_gridding,  # "uncorrected plane gridding"
     "cpg1": get_xyz_from_point_code_using_corrected_plane_gridding,  # "corrected plane gridding"
     "rta1": get_xyz_from_point_code_using_r_theta_adjustment,  # "r-theta adjustment"
 }
-CHOSEN_METHOD = "rta1"
+CHOSEN_METHOD = "cpg1"
 
 
 def get_xyz_from_point_code(pc, as_array=True):
