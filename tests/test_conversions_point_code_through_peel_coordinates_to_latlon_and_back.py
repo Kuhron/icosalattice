@@ -27,7 +27,7 @@ def test_conversions_point_code_through_peel_coordinates_to_latlon_and_back():
     f21 = lambda sld: pe.get_point_code_from_raw_peel_coordinates(sld, max_iterations=8, allow_clipping=True)
 
     f23 = pe.get_adjusted_peel_coordinates_from_raw_peel_coordinates
-    f32 = pe.get_raw_peel_coordinates_from_adjusted_peel_coordinates
+    f32 = pe.get_raw_peel_coordinates_from_adjusted_peel_coordinates  # FIXME BUG HERE
 
     f34 = pe.get_xyz_from_adjusted_peel_coordinates
     f43 = pe.get_adjusted_peel_coordinates_from_xyz

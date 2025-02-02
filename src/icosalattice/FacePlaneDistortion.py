@@ -10,26 +10,35 @@ import icosalattice.StartingPoints as sp
 
 
 ALPHA = icm.ANGLE_BETWEEN_VERTICES_RAD
+SQRT_5 = np.sqrt(5)
+SIN_ALPHA = 2 * SQRT_5 / 5
+COS_ALPHA = SQRT_5 / 5
+TAN_ALPHA = 2
+SIN_ALPHA_OVER_2 = np.sqrt(1/10 * (5 - SQRT_5))
+COS_ALPHA_OVER_2 = np.sqrt(1/10 * (5 + SQRT_5))
+TAN_ALPHA_OVER_2 = 1/2 * (-1 + SQRT_5)
+COT_ALPHA_OVER_2 = 1/2 * (1 + SQRT_5)
+assert np.isclose(SIN_ALPHA_OVER_2 / COS_ALPHA_OVER_2, TAN_ALPHA_OVER_2, rtol=1e-9)
+
 
 # H, the height from the center of the sphere to the middle of an edge of a face plane
-H = np.cos(ALPHA/2)
-assert np.isclose(H, (1/10 * (5 + 5**0.5))**0.5, atol=1e-9)  # found from putting decimal in Wolfram Alpha
+H = COS_ALPHA_OVER_2
 
 # W, the length of the edge of the face plane
 # = length of the straight line in 3D between two neighboring icosa vertices
-W = 2*np.sin(ALPHA/2)  # length of edge of face plane
-assert np.isclose(W, (2/5 * (5 - 5**0.5))**0.5, atol=1e-9)  # found from putting decimal in Wolfram Alpha
+W = 2 * SIN_ALPHA_OVER_2
+assert np.isclose(W, (2/5 * (5 - 5**0.5))**0.5, rtol=1e-9)  # found from putting decimal in Wolfram Alpha
 
 # B, the length from a vertex to the middle of the opposite edge of a face plane
 B = (1/2 * 3**0.5) * W
-assert np.isclose(B, (3/10 * (5 - 5**0.5))**0.5, atol=1e-9)  # found from putting decimal in Wolfram Alpha
+assert np.isclose(B, (3/10 * (5 - 5**0.5))**0.5, rtol=1e-9)  # found from putting decimal in Wolfram Alpha
 # for WA: b = sqrt(3/10 * (5 - sqrt(5)))
 
 # G, the length from the center of the sphere to the centroid of a face plane
 # G = ((-(B**4) + 2*(B**2)*(H**2+1) - (H**2-1)**2) ** 0.5) / (2*B)
 
 G = (1 - ((B**2 - H**2 + 1)**2)/(4 * B**2))**0.5
-assert np.isclose(G, (1/15 * (5 + 2*5**0.5))**0.5, atol=1e-9)  # found from iteratively simplifying this expression on paper and in Wolfram Alpha
+assert np.isclose(G, (1/15 * (5 + 2*5**0.5))**0.5, rtol=1e-9)  # found from iteratively simplifying this expression on paper and in Wolfram Alpha
 
 # for WA: g = sqrt(1/15 * (5 + 2*sqrt(5)))
 #         g^2 = 1/15 * (5 + 2*sqrt(5))
@@ -38,19 +47,19 @@ assert np.isclose(G, (1/15 * (5 + 2*5**0.5))**0.5, atol=1e-9)  # found from iter
 b1_from_wolfram = (B**2 - H**2 + 1)/(2*B)
 b1_from_triangle = (1 - G**2)**0.5
 b2 = B - b1_from_triangle
-assert np.isclose(b1_from_wolfram, b1_from_triangle, atol=1e-9)
-assert np.isclose(G**2 + b1_from_wolfram**2, 1, atol=1e-9)
-assert np.isclose(G**2 + b2**2, H**2, atol=1e-9)
+assert np.isclose(b1_from_wolfram, b1_from_triangle, rtol=1e-9)
+assert np.isclose(G**2 + b1_from_wolfram**2, 1, rtol=1e-9)
+assert np.isclose(G**2 + b2**2, H**2, rtol=1e-9)
 del b1_from_wolfram
 del b1_from_triangle
 del b2
 
-assert np.isclose(B/G, 1/2*(9-3*5**0.5), atol=1e-9)
+assert np.isclose(B/G, 1/2*(9-3*5**0.5), rtol=1e-9)
 # for WA: b = g/2*(9-3*sqrt(5))
 
 # GAMMA, the angle from a corner of the face plane to its center (angle from perspective of the sphere center)
 GAMMA = np.arccos(G/1)
-assert np.isclose(GAMMA, np.arctan(3 - 5**0.5), atol=1e-9)  # found from putting decimal in Wolfram Alpha
+assert np.isclose(GAMMA, np.arctan(3 - 5**0.5), rtol=1e-9)  # found from putting decimal in Wolfram Alpha
 # for WA: gamma = arctan(3-sqrt(5))
 
 
@@ -88,13 +97,21 @@ def get_theta_proportion_from_lp(lp):
 def get_lp_proportion_from_theta_proportion(a):
     if not (0 <= a <= 1):
         raise ValueError(f"theta proportion must be in interval [0, 1], got {a}")
-    return get_lp_from_theta_proportion(a) / W
+    # return get_lp_from_theta_proportion(a) / W
+
+    # more direct calculation
+    # return (SIN_ALPHA_OVER_2 - COS_ALPHA_OVER_2 * np.tan(ALPHA/2 - a*ALPHA)) / (2 * SIN_ALPHA_OVER_2)
+    return 1/2 - 1/2 * COT_ALPHA_OVER_2 * np.tan(ALPHA/2 - a * ALPHA)
 
 
 def get_theta_proportion_from_lp_proportion(a):
     if not (0 <= a <= 1):
         raise ValueError(f"lp proportion must be in interval [0, 1], got {a}")
-    return get_theta_proportion_from_lp(a * W)
+    # return get_theta_proportion_from_lp(a * W)
+
+    # more direct calculation
+    # return 1/2 - np.atan((SIN_ALPHA_OVER_2 - a * 2 * SIN_ALPHA_OVER_2) / COS_ALPHA_OVER_2) / ALPHA
+    return 1/2 - np.atan(TAN_ALPHA_OVER_2 * (1 - 2 * a)) / ALPHA
 
 
 
