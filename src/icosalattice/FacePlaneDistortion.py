@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 import icosalattice.IcosahedronMath as icm
 import icosalattice.StartingPoints as sp
+from icosalattice.MathUtil import round_off_unwanted_float_precision
 
 
 ALPHA = icm.ANGLE_BETWEEN_VERTICES_RAD
@@ -84,6 +85,7 @@ def get_theta_from_lp(lp):
 
 
 def get_lp_from_theta_proportion(a):
+    a = round_off_unwanted_float_precision(a)
     if not (0 <= a <= 1):
         raise ValueError(f"theta proportion must be in interval [0, 1], got {a}")
     return get_lp_from_theta(a * ALPHA)
@@ -95,6 +97,7 @@ def get_theta_proportion_from_lp(lp):
 
 
 def get_lp_proportion_from_theta_proportion(a):
+    a = round_off_unwanted_float_precision(a)
     if not (0 <= a <= 1):
         raise ValueError(f"theta proportion must be in interval [0, 1], got {a}")
     # return get_lp_from_theta_proportion(a) / W
@@ -105,6 +108,7 @@ def get_lp_proportion_from_theta_proportion(a):
 
 
 def get_theta_proportion_from_lp_proportion(a):
+    a = round_off_unwanted_float_precision(a)
     if not (0 <= a <= 1):
         raise ValueError(f"lp proportion must be in interval [0, 1], got {a}")
     # return get_theta_proportion_from_lp(a * W)
