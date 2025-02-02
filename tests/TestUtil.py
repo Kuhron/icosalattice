@@ -1,3 +1,5 @@
+import numpy as np
+
 import icosalattice.Edges as ed
 import icosalattice.StartingPoints as sp
 from icosalattice.PointRepresentationAsFloat import point_float_to_code
@@ -30,6 +32,12 @@ def get_test_point_codes():
 
     pcs = no_trailing_zero_pcs + trailing_zero_pcs
     return pcs
+
+
+def get_test_floats_01(n):
+    ns = np.pi * np.arange(1, n+1)
+    xs = (ns**1.3 + ns**2.1) % 1
+    return xs
 
 
 TEST_POINT_CODES = get_test_point_codes()

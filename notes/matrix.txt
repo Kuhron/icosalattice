@@ -1,0 +1,23 @@
+(x,y) = l*(A-C) + d*(L-C)
+
+x = l * (xA - xC) + d * (xL - xC) = l * dxl + d * dxd
+y = l * (yA - yC) + d * (yL - yC) = l * dyl + d * dyd
+
+[x  = [dxl dxd  [l 
+ y]    dyl dyd]  d]
+
+M = [dxl dxd
+     dyl dyd]
+
+det(M) = dxl*dyd - dxd*dyl
+
+M^-1 = 1/det(M) [ dyd -dxd  = [dlx dly
+                 -dyl  dxl]    ddx ddy]
+
+[l  = [dlx dly  [x
+ d]    ddx ddy]  y]
+
+l = x * dlx + y * dly = (ugly algebra)
+d = x * ddx + y * ddy = (ugly algebra)
+
+

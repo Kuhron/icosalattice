@@ -178,22 +178,23 @@ def adjust_ld_using_lp_transformation_in_triangle_coordinates(l, d):
     # print(f"{l=:.4f}, {d=:.4f}")
     a,c,k = get_ack_from_ld(l, d)
     # print(f"{a=:.4f}, {c=:.4f}, {k=:.4f}")
-    neg = is_negative_triangle_coordinate(a)
+    neg = is_negative_triangle_coordinate(a) or is_negative_triangle_coordinate(c) or is_negative_triangle_coordinate(k)
     if neg:
-        assert is_negative_triangle_coordinate(c) and is_negative_triangle_coordinate(k)
+        assert is_negative_triangle_coordinate(a) and is_negative_triangle_coordinate(c) and is_negative_triangle_coordinate(k)
         a,c,k = -a, -c, -k
     a2 = distort.get_lp_proportion_from_theta_proportion(a)
     c2 = distort.get_lp_proportion_from_theta_proportion(c)
     k2 = distort.get_lp_proportion_from_theta_proportion(k)
     r = 2 / (a2 + c2 + k2)  # hack to try to get the new a,c,k to work with the triangular coordinates because they no longer add up to 2
+    print(f"adjust via lp; {r=:.6f}, {1/r=:.6f}")
     a2 *= r
     c2 *= r
     k2 *= r
     if neg:
         a2, c2, k2 = -a2, -c2, -k2
-    # print(f"{a2=:.4f}, {c2=:.4f}, {k2=:.4f}")
+    print(f"{a2=:.6f}, {c2=:.6f}, {k2=:.6f}")
     l2, d2 = get_ld_from_ack(a2, c2, k2)
-    # print(f"{l2=:.4f}, {d2=:.4f}")
+    print(f"{l2=:.6f}, {d2=:.6f}")
     if l2 < 0:
         assert abs(l2) < 1e-9, "negative l"
         l2 = 0.0
@@ -204,27 +205,28 @@ def adjust_ld_using_lp_transformation_in_triangle_coordinates(l, d):
 
 
 def deadjust_ld_using_lp_transformation_in_triangle_coordinates(l, d):
-    # turn adjusted into raw
+    # turn adjusted ld into raw ld
 
     print(f"{l=:.4f}, {d=:.4f}")
     a,c,k = get_ack_from_ld(l, d)
     print(f"{a=:.4f}, {c=:.4f}, {k=:.4f}")
-    neg = is_negative_triangle_coordinate(a)
+    neg = is_negative_triangle_coordinate(a) or is_negative_triangle_coordinate(c) or is_negative_triangle_coordinate(k)
     if neg:
-        assert is_negative_triangle_coordinate(c) and is_negative_triangle_coordinate(k)
+        assert is_negative_triangle_coordinate(a) and is_negative_triangle_coordinate(c) and is_negative_triangle_coordinate(k)
         a,c,k = -a, -c, -k
     a2 = distort.get_theta_proportion_from_lp_proportion(a)
     c2 = distort.get_theta_proportion_from_lp_proportion(c)
     k2 = distort.get_theta_proportion_from_lp_proportion(k)
     r = 2 / (a2 + c2 + k2)  # hack to try to get the new a,c,k to work with the triangular coordinates because they no longer add up to 2
+    print(f"deadjust via lp; {r=:.6f}, {1/r=:.6f}")
     a2 *= r
     c2 *= r
     k2 *= r
     if neg:
         a2, c2, k2 = -a2, -c2, -k2
-    print(f"{a2=:.4f}, {c2=:.4f}, {k2=:.4f}")
+    print(f"{a2=:.6f}, {c2=:.6f}, {k2=:.6f}")
     l2, d2 = get_ld_from_ack(a2, c2, k2)
-    print(f"{l2=:.4f}, {d2=:.4f}")
+    print(f"{l2=:.6f}, {d2=:.6f}")
     if l2 < 0:
         assert abs(l2) < 1e-9, "negative l"
         l2 = 0.0
