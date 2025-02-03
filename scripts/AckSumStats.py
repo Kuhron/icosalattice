@@ -9,7 +9,13 @@
 # discovery: lp_sum_orig and lp_inv_sum_orig are NOT in one-to-one correspondence!
 # - hopefully there is some other quantity we can get from the adjusted ack to know what lp_sum was used to adjust them
 # - maybe the hack of multiplying by 2/lp_sum_orig is not one-to-one on the triangle? should check this, hope it's not folding the fabric over itself
-# - - from Desmos it looks okay by moving the test point around, but beware just in case
+# - - from Desmos it looks okay by moving the test point around, but beware of this possibility just in case
+
+# discovery from comparing Desmos screenshots: the contour lines on the lp_sums and lp_inv_sums are NOT the same!
+# - they all look like rounded triangles, but the counterpart contour does not have the same shape
+# - that is, if you take the lp_sum contour passing through a given point on the triangle, and compare the lp_inv_sum contour through the same point,
+# - they will both be rounded triangles but one of them will bulge out more than the other
+# - to me this further shows that multiplying by the factor 2/lp_sum_orig is too simple and leads to difficulty in inverting the adjustment
 
 
 import numpy as np
@@ -20,8 +26,10 @@ import icosalattice.FacePlaneDistortion as distort
 
 ALPHA = distort.ALPHA
 
-n = 200
-vals = np.linspace(0, 1, n)
+n = 6
+vals = sorted(list(np.linspace(0, 1, n)) + [1/3, 2/3])
+n = len(vals)
+
 X = np.zeros((n,n))
 Y = np.zeros((n,n))
 sums = np.zeros((n, n))
@@ -77,7 +85,7 @@ for i in range(n):
         lp_sums.append(lp_sum_orig)
         lp_inv_sums.append(lp_inv_sum_orig)
 
-        print(f"{a:.6f} {c:.6f} {k:.6f} {a+c+k:.6f} {a2:.6f} {c2:.6f} {k2:.6f} {lp_sum_orig:.6f} {a3:.6f} {c3:.6f} {k3:.6f} {lp_inv_sum_orig:.6f}")
+        print(f"{a:.6f} {c:.6f} {k:.6f} {a+c+k:.6f} {a2_orig:.6f} {c2_orig:.6f} {k2_orig:.6f} {lp_sum_orig:.6f} {a3_orig:.6f} {c3_orig:.6f} {k3_orig:.6f} {lp_inv_sum_orig:.6f}")
 
         if neg:
             a2,c2,k2 = -a2,-c2,-k2
