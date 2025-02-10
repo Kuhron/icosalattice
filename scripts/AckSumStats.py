@@ -17,6 +17,11 @@
 # - they will both be rounded triangles but one of them will bulge out more than the other
 # - to me this further shows that multiplying by the factor 2/lp_sum_orig is too simple and leads to difficulty in inverting the adjustment
 
+# alternate idea similar to cpg1:
+# - draw shortest lines from the point to each side, lp those intersection points, see where the perpendiculars from the adjusted edge points get you
+# - very likely they will not converge, so like with cpg1 you'll have to adjust them somehow
+# - maybe the point that minimizes sum of distances to those three?
+
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,13 +31,15 @@ import icosalattice.FacePlaneDistortion as distort
 
 ALPHA = distort.ALPHA
 
-n = 6
+n = 500
 vals = sorted(list(np.linspace(0, 1, n)) + [1/3, 2/3])
 n = len(vals)
 
 X = np.zeros((n,n))
 Y = np.zeros((n,n))
 sums = np.zeros((n, n))
+
+rs_at_adjusted_points = np.zeros((n, n))  # what value of r = 2/lp_sum_orig got us to this point
 
 lp = distort.get_lp_proportion_from_theta_proportion
 lp_inv = distort.get_theta_proportion_from_lp_proportion
@@ -85,7 +92,11 @@ for i in range(n):
         lp_sums.append(lp_sum_orig)
         lp_inv_sums.append(lp_inv_sum_orig)
 
-        print(f"{a:.6f} {c:.6f} {k:.6f} {a+c+k:.6f} {a2_orig:.6f} {c2_orig:.6f} {k2_orig:.6f} {lp_sum_orig:.6f} {a3_orig:.6f} {c3_orig:.6f} {k3_orig:.6f} {lp_inv_sum_orig:.6f}")
+        # # for printing to Excel-readable file
+        # print(f"{a:.6f} {c:.6f} {k:.6f} {a+c+k:.6f} {a2_orig:.6f} {c2_orig:.6f} {k2_orig:.6f} {lp_sum_orig:.6f} {a3_orig:.6f} {c3_orig:.6f} {k3_orig:.6f} {lp_inv_sum_orig:.6f}")
+
+        # for printing more human-readably for me to think about what to do
+        print(f"({a:.6f}, {c:.6f}, {k:.6f}) (sum {a+c+k:.6f}) >lp> ({a2_orig:.6f}, {c2_orig:.6f}, {k2_orig:.6f}) (sum {lp_sum_orig:.6f}) >r> ({a2:.6f}, {c2:.6f}, {k2:.6f}) (sum {a2+c2+k2:.6f})")
 
         if neg:
             a2,c2,k2 = -a2,-c2,-k2
@@ -96,16 +107,18 @@ for i in range(n):
         if s < MIN_LP_SUM - 1e-9 or s > MAX_LP_INV_SUM + 1e-9:
             raise Exception(f"{l=:.6f}, {d=:.6f}\n{a=:.6f}, {c=:.6f}, {k=:.6f}\n{a2=:.6f}, {c2=:.6f}, {k2=:.6f}")
         sums[i,j] = s
+        rs_at_adjusted_points[i, j] = r1
 
 assert np.isclose(3 * lp(2/3), MIN_LP_SUM, rtol=1e-9)
 assert np.isclose(3 * lp_inv(2/3), MAX_LP_INV_SUM, rtol=1e-9)
 
 # print(MIN_LP_SUM * MAX_LP_INV_SUM / 4)  # they are not reciprocals
 
-plt.pcolormesh(X, Y, sums, cmap="jet")
+# plt.pcolormesh(X, Y, sums, cmap="jet")
+plt.pcolormesh(X, Y, rs_at_adjusted_points, cmap="jet")
 plt.colorbar()
 plt.gca().set_aspect("equal")
 plt.show()
 
-plt.scatter(lp_sums, lp_inv_sums)
-plt.show()
+# plt.scatter(lp_sums, lp_inv_sums)
+# plt.show()
