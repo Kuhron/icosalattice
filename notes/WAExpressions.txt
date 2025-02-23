@@ -1,0 +1,66 @@
+r = 3/(2b)*(sqrt(3)*x+y)
+t = 3/pi*arctan((-x+sqrt(3)*y)/(sqrt(3)*x+y))
+
+x = b/6*r*(sqrt(3)-tan(pi/3*t))
+y = b/6*r*(1+sqrt(3)*tan(pi/3*t))
+
+-x+sqrt(3)*y = 2/3*b*r*tan(pi/3*t)
+sqrt(3)*x+y = 2/3*b*r
+arctan((-x+sqrt(3)*y)/(sqrt(3)*x+y)) = arctan(tan(pi/3*t))
+
+
+partials
+
+dx/dr
+= d/dr (b/6*r*(sqrt(3)-tan(pi/3*t)))
+= b/(2*sqrt(3)) - b/6*tan(pi/3*t)
+= 2/3*b*x/(sqrt(3)*x+y)
+
+dx/dt
+= d/dt (b/6*r*(sqrt(3)-tan(pi/3*t)))
+= -1/18*pi*b*r*sec^2(pi/3*t)
+= -pi/3*(x^2+y^2)/(sqrt(3)*x+y)
+
+dy/dr
+= d/dr (b/6*r*(1+sqrt(3)*tan(pi/3*t)))
+= b/6*(sqrt(3)*tan(pi/3*t)+1)
+= 2/3*b*y/(sqrt(3)*x+y)
+
+dy/dt
+= d/dt (b/6*r*(1+sqrt(3)*tan(pi/3*t)))
+= sqrt(3)/18*pi*b*r*sec^2(pi/3*t)
+= pi*sqrt(3)/3 * (x^2+y^2)/(sqrt(3)*x+y)
+
+dr/dx
+= d/dx (3/(2*b)*(sqrt(3)*x+y))
+= 3*sqrt(3)/(2*b)
+
+dr/dy
+= d/dy (3/(2*b)*(sqrt(3)*x+y))
+= 3/(2*b)
+
+dt/dx
+= d/dx (3/pi*arctan((-x+sqrt(3)*y)/(sqrt(3)*x+y)))
+= -3/pi * y/(x^2+y^2)
+
+dt/dy
+= d/dy (3/pi*arctan((-x+sqrt(3)*y)/(sqrt(3)*x+y)))
+= 3/pi * x/(x^2+y^2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
