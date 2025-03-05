@@ -73,6 +73,8 @@ rho_rels_adj = np.zeros((n,n))  # radius as proportion of max radius at that ang
 
 thetas_orig = np.zeros((n,n))  # angle on one-sixth triangle face (WLOG so that center of edge is at theta=0 and corner of triangle is at theta=pi/3), before adjusting the point
 thetas_adj = np.zeros((n,n))  # theta after adjusting the point
+theta_rels_orig = np.zeros((n,n))  # theta as proportion of max theta (=pi/3), before adjusting the point
+theta_rels_adj = np.zeros((n,n))  # theta proportion after adjusting the point
 
 lp = distort.get_lp_proportion_from_theta_proportion
 lp_inv = distort.get_theta_proportion_from_lp_proportion
@@ -80,7 +82,7 @@ lp_inv = distort.get_theta_proportion_from_lp_proportion
 get_rho_from_xy = lambda x,y: ((x-xQ)**2 + (y-yQ)**2) ** 0.5
 get_theta_from_xy = lambda x,y: theta_zig(get_theta_0_from_xy(x,y))
 get_theta_0_from_xy = lambda x,y: theta_shift(get_theta_raw_from_xy(x,y))
-get_theta_raw_from_xy = lambda x,y: np.arctan2((y-yQ),(x-xQ))
+get_theta_raw_from_xy = lambda x,y: 0 if xy_is_centroid(x,y) else np.arctan2((y-yQ),(x-xQ))
 theta_shift = lambda theta: theta - np.pi/6
 theta_zig = lambda theta: zigzag(mod(theta, 2*np.pi), np.pi/3)
 
@@ -88,6 +90,8 @@ rho_max = 2/3 * distort.B
 rho_min = 1/3 * distort.B
 get_rho_max_for_theta = lambda theta: rho_min / np.cos(theta)  # maximum distance (or radius) from centroid on face plane
 get_rho_relative = lambda rho, theta: rho / get_rho_max_for_theta(theta)
+get_theta_relative = lambda theta: theta / (np.pi/3)
+xy_is_centroid = lambda x,y: np.isclose(x, xQ, rtol=1e-12) and np.isclose(y, yQ, rtol=1e-12)
 
 
 for i in range(n):
@@ -145,16 +149,21 @@ for i in range(n):
         lp_sums[i,j] = lp_sum
         lp_inv_sums[i,j] = lp_inv_sum
         rs[i, j] = r1
+
         rho_orig = get_rho_from_xy(x1, abs(y1))
         rho_adj = get_rho_from_xy(x2, abs(y2))
         theta_orig = get_theta_from_xy(x1, abs(y1))
         theta_adj = get_theta_from_xy(x2, abs(y2))
+
         rhos_orig[i, j] = rho_orig
         rhos_adj[i, j] = rho_adj
         rho_rels_orig[i, j] = get_rho_relative(rho_orig, theta_orig)
         rho_rels_adj[i, j] = get_rho_relative(rho_adj, theta_adj)
         thetas_orig[i, j] = theta_orig
         thetas_adj[i, j] = theta_adj
+        theta_rels_orig[i, j] = get_theta_relative(theta_orig)
+        theta_rels_adj[i, j] = get_theta_relative(theta_adj)
+
 
 assert np.isclose(3 * lp(2/3), MIN_LP_SUM, rtol=1e-9)
 assert np.isclose(3 * lp_inv(2/3), MAX_LP_INV_SUM, rtol=1e-9)
@@ -170,14 +179,14 @@ assert np.isclose(3 * lp_inv(2/3), MAX_LP_INV_SUM, rtol=1e-9)
 #     plt.gca().set_aspect("equal")
 #     plt.show()
 
-plt.scatter(rho_rels_orig, thetas_orig, c=rs, cmap="jet")
+plt.scatter(rho_rels_orig, theta_rels_orig, c=rho_rels_adj-rho_rels_orig, cmap="jet")
 plt.xlabel("relative rho of original point")
-plt.ylabel("theta of original point")
-plt.colorbar()
+plt.ylabel("relative theta of original point")
+plt.colorbar().set_label("difference in relative rho: adjusted point minus original point")
 plt.show()
 
-plt.scatter(rho_rels_adj, thetas_adj, c=rs, cmap="jet")
-plt.xlabel("relative rho of adjusted point")
-plt.ylabel("theta of adjusted point")
-plt.colorbar()
+plt.scatter(rho_rels_orig, theta_rels_orig, c=theta_rels_adj-theta_rels_orig, cmap="jet")
+plt.xlabel("relative rho of original point")
+plt.ylabel("relative theta of original point")
+plt.colorbar().set_label("difference in relative theta: adjusted point minus original point")
 plt.show()

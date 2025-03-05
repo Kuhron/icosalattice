@@ -36,11 +36,8 @@ assert np.isclose(B, (3/10 * (5 - 5**0.5))**0.5, rtol=1e-9)  # found from puttin
 # for WA: b = sqrt(3/10 * (5 - sqrt(5)))
 
 # G, the length from the center of the sphere to the centroid of a face plane
-# G = ((-(B**4) + 2*(B**2)*(H**2+1) - (H**2-1)**2) ** 0.5) / (2*B)
-
 G = (1 - ((B**2 - H**2 + 1)**2)/(4 * B**2))**0.5
 assert np.isclose(G, (1/15 * (5 + 2*5**0.5))**0.5, rtol=1e-9)  # found from iteratively simplifying this expression on paper and in Wolfram Alpha
-
 # for WA: g = sqrt(1/15 * (5 + 2*sqrt(5)))
 #         g^2 = 1/15 * (5 + 2*sqrt(5))
 

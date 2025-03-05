@@ -9,7 +9,14 @@ sqrt(3)*x+y = 2/3*b*r
 arctan((-x+sqrt(3)*y)/(sqrt(3)*x+y)) = arctan(tan(pi/3*t))
 
 
-partials
+Jacobian matrix elements for general functions rho_1(rho_0, theta_0) and theta_1(rho_0, theta_0)
+
+J_11
+= dx_1/dx_0
+= b/6*(sqrt(3)-tan(pi/3*t_1))*[r_r*3*sqrt(3)/(2b)+r_t*3/pi*(-y_0)/(x_0^2+y_0^2)] + -b/6*r_1*sec^2(pi/3*t_1)*pi/3*[t_r*3*sqrt(3)/(2b)+t_t*3/pi*(-y_0)/(x_0^2+y_0^2)]
+
+
+partials for id functions of rho and theta (rho_1 = rho_0, theta_1 = theta_0)
 
 dx/dr
 = d/dr (b/6*r*(sqrt(3)-tan(pi/3*t)))
