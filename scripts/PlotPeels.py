@@ -11,11 +11,13 @@ import math
 def sign(x):
     return 1 if x > 0 else -1 if x < 0 else 0
 
+
 def transform_coords(lonlat):
     assert type(lonlat) is np.ndarray
     N, two = lonlat.shape
     assert two == 2, lonlat.shape
     return np.apply_along_axis(transform_one_coord_pair, 1, lonlat)
+
 
 def transform_one_coord_pair(lonlat):
     lon, lat = lonlat

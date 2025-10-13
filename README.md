@@ -55,3 +55,6 @@ New points are created in a particular order. #TODO describe the point ordering
 
 #TODO describe birth number and lookup number systems, show some tables of how they correspond to point codes, make it very clear to reader which systems are for what and why they exist and why you'd use them (and if there is no such reason then get rid of that system, e.g. birth order might not be useful)
 
+# Tools within the package
+
+You can run a REPL for doing point-code arithmetic calculations by running `src/icosalattice/PointCodeArithmetic.py` as a script.

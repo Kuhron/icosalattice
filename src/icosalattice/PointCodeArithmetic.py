@@ -2,6 +2,7 @@
 # to try to remove the need for recursion as much as possible in computing adjacency
 
 import functools
+import readline
 
 from icosalattice.BoxCornerMapping import correct_reversed_edge_polarity, point_code_is_in_reversed_polarity_encoding, reverse_edge_polarity
 import icosalattice.StartingPoints as sp
@@ -384,3 +385,80 @@ def validate_point_code(pc):
         raise Exception(f"all steps in point code must be '0', '1', '2', or '3', but got {pc = }")
     if pc[0] in sp.POLES:
         assert all(x == "0" for x in pc[1:]), f"poles cannot have children, but got {pc = }"
+
+
+def run_pca_repl():
+    example_lines = [
+        "K0101 + 2",
+        "E - 1",
+    ]
+    print("Enter an arithmetic expression involving point codes, such as:\n" + "\n".join(example_lines) + "\n")
+    # TODO also do things like get the par/dpar and children
+
+    operators = {"plus": "+", "minus": "-"}
+
+    while True:
+        try:
+            inp = input("> ")
+            tokenized = multi_split(inp, operators.values(), strip=True)
+            res = simple_pattern_match(tokenized, operators)
+            print(res)
+        except KeyboardInterrupt:
+            print()
+            continue
+        except EOFError:
+            print()
+            return
+
+
+def simple_pattern_match(tokens, operators):
+    # if this goes beyond simple expressions with no recursion, then I should use ANTLR
+
+    invalid = "invalid expression"
+    is_point_code = lambda s: s[0] in sp.STARTING_POINT_CODES and all(x in "0123" for x in s[1:])
+    is_direction_str = lambda s: s in ["0", "1", "2", "3"]
+
+    if len(tokens) == 1:
+        x ,= tokens
+        if x in operators:
+            return invalid
+        elif is_point_code(x) or is_direction_str(x):
+            return x
+        else:
+            return invalid
+    elif len(tokens) == 2:
+        return invalid
+    elif len(tokens) == 3:
+        pc, op, direction = tokens
+        if not is_point_code(pc) or not is_direction_str(direction):
+            return invalid
+        direction = int(direction)
+        if op == operators["plus"]:
+            return add_direction_to_point_code(pc=pc, x=direction)
+        elif op == operators["minus"]:
+            return add_direction_to_point_code(pc=pc, x=-1*direction)
+        else:
+            return invalid
+    else:
+        return invalid
+
+
+def multi_split(s, delims, strip:bool=False):
+    # split the string on any of the delimiters, creating a list containing each token, including the delimiters
+    l = [s]
+    for delim in delims:
+        new_l = []
+        for x in l:
+            spl = x.split(delim)
+            for y in spl[:-1]:
+                new_l += [y, delim]
+            new_l.append(spl[-1])
+        l = new_l
+        if strip:
+            l = [x.strip() for x in l]
+    return l
+
+
+
+if __name__ == "__main__":
+    run_pca_repl()
