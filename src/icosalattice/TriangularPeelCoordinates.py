@@ -175,9 +175,11 @@ def is_positive_triangle_coordinate(x):
 def adjust_ld_using_lp_transformation_in_triangle_coordinates(l, d):
     # turn raw ld into adjusted ld
 
-    # print(f"{l=:.4f}, {d=:.4f}")
-    a,c,k = get_ack_from_ld(l, d)
-    # print(f"{a=:.4f}, {c=:.4f}, {k=:.4f}")
+    # print("\n---- adjusting ld ----")
+
+    # print(f"{l=:.6f}, {d=:.6f}")
+    a, c, k = get_ack_from_ld(l, d)
+    # print(f"{a=:.6f}, {c=:.6f}, {k=:.6f}")
     neg = is_negative_triangle_coordinate(a) or is_negative_triangle_coordinate(c) or is_negative_triangle_coordinate(k)
     if neg:
         assert is_negative_triangle_coordinate(a) and is_negative_triangle_coordinate(c) and is_negative_triangle_coordinate(k)
@@ -186,54 +188,59 @@ def adjust_ld_using_lp_transformation_in_triangle_coordinates(l, d):
     c2 = distort.get_lp_proportion_from_theta_proportion(c)
     k2 = distort.get_lp_proportion_from_theta_proportion(k)
     r = 2 / (a2 + c2 + k2)  # hack to try to get the new a,c,k to work with the triangular coordinates because they no longer add up to 2
-    print(f"adjust via lp; {r=:.6f}, {1/r=:.6f}")
+    # print(f"adjust via lp; {r=:.6f}, {1/r=:.6f}")
     a2 *= r
     c2 *= r
     k2 *= r
     if neg:
         a2, c2, k2 = -a2, -c2, -k2
-    print(f"{a2=:.6f}, {c2=:.6f}, {k2=:.6f}")
+    # print(f"{a2=:.6f}, {c2=:.6f}, {k2=:.6f}")
     l2, d2 = get_ld_from_ack(a2, c2, k2)
-    print(f"{l2=:.6f}, {d2=:.6f}")
+    # print(f"{l2=:.6f}, {d2=:.6f}")
     if l2 < 0:
         assert abs(l2) < 1e-9, "negative l"
         l2 = 0.0
     if d2 < 0:
         assert abs(d2) < 1e-9, "negative d"
         d2 = 0.0
+    # print()
     return l2, d2
 
 
-def deadjust_ld_using_lp_transformation_in_triangle_coordinates(l, d):
-    # turn adjusted ld into raw ld
+# def deadjust_ld_using_lp_transformation_in_triangle_coordinates(l2, d2):
+#     # this is not the correct way to invert the adjustment; until-and-if I figure out the solution, just go the one direction (ld > ack > a'c'k' > l'd' > xyz) and can find ld from xyz by some search algorithm
+#     # turn adjusted ld into raw ld
 
-    print(f"{l=:.4f}, {d=:.4f}")
-    a,c,k = get_ack_from_ld(l, d)
-    print(f"{a=:.4f}, {c=:.4f}, {k=:.4f}")
-    neg = is_negative_triangle_coordinate(a) or is_negative_triangle_coordinate(c) or is_negative_triangle_coordinate(k)
-    if neg:
-        assert is_negative_triangle_coordinate(a) and is_negative_triangle_coordinate(c) and is_negative_triangle_coordinate(k)
-        a,c,k = -a, -c, -k
-    a2 = distort.get_theta_proportion_from_lp_proportion(a)
-    c2 = distort.get_theta_proportion_from_lp_proportion(c)
-    k2 = distort.get_theta_proportion_from_lp_proportion(k)
-    r = 2 / (a2 + c2 + k2)  # hack to try to get the new a,c,k to work with the triangular coordinates because they no longer add up to 2
-    print(f"deadjust via lp; {r=:.6f}, {1/r=:.6f}")
-    a2 *= r
-    c2 *= r
-    k2 *= r
-    if neg:
-        a2, c2, k2 = -a2, -c2, -k2
-    print(f"{a2=:.6f}, {c2=:.6f}, {k2=:.6f}")
-    l2, d2 = get_ld_from_ack(a2, c2, k2)
-    print(f"{l2=:.6f}, {d2=:.6f}")
-    if l2 < 0:
-        assert abs(l2) < 1e-9, "negative l"
-        l2 = 0.0
-    if d2 < 0:
-        assert abs(d2) < 1e-9, "negative d"
-        d2 = 0.0
-    return l2, d2
+#     print("\n---- deadjusting ld ----")
+
+#     print(f"{l2=:.6f}, {d2=:.6f}")
+#     a2, c2, k2 = get_ack_from_ld(l2, d2)
+#     print(f"{a2=:.6f}, {c2=:.6f}, {k2=:.6f}")
+#     neg = is_negative_triangle_coordinate(a2) or is_negative_triangle_coordinate(c2) or is_negative_triangle_coordinate(k2)
+#     if neg:
+#         assert is_negative_triangle_coordinate(a2) and is_negative_triangle_coordinate(c2) and is_negative_triangle_coordinate(k2)
+#         a2,c2,k2 = -a2, -c2, -k2
+#     a = distort.get_theta_proportion_from_lp_proportion(a2)
+#     c = distort.get_theta_proportion_from_lp_proportion(c2)
+#     k = distort.get_theta_proportion_from_lp_proportion(k2)
+#     r = 2 / (a + c + k)  # hack to try to get the new a,c,k to work with the triangular coordinates because they no longer add up to 2
+#     print(f"deadjust via lp; {r=:.6f}, {1/r=:.6f}")
+#     a *= r
+#     c *= r
+#     k *= r
+#     if neg:
+#         a, c, k = -a, -c, -k
+#     print(f"{a=:.6f}, {c=:.6f}, {k=:.6f}")
+#     l, d = get_ld_from_ack(a, c, k)
+#     print(f"{l=:.6f}, {d=:.6f}")
+#     if l < 0:
+#         assert abs(l) < 1e-9, "negative l"
+#         l = 0.0
+#     if d < 0:
+#         assert abs(d) < 1e-9, "negative d"
+#         d = 0.0
+#     print()
+#     return l, d
 
 
 

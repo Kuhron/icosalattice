@@ -19,7 +19,7 @@ while True:
     # pick a test point
     if random.random() < 1/3:
         pc_orig = icm.get_random_point_code(min_iterations=0, expected_iterations=3, max_iterations=9)
-        p = UnitSpherePoint.from_xyz(*pe.get_xyz_from_point_code_using_peel_coordinates(pc_orig))
+        p = UnitSpherePoint.from_xyz(*pe.get_xyz_from_point_code(pc_orig, method="cpg1"))
         print(f"random point: {pc_orig}")
     elif random.random() < 1/2:
         i = random.randrange(len(sp.STARTING_POINT_CODES))

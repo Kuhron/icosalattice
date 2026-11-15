@@ -39,10 +39,11 @@ def get_adjusted_peel_coordinates_from_raw_peel_coordinates(sld):
     return spc, l_adjusted, d_adjusted
 
 
-def get_raw_peel_coordinates_from_adjusted_peel_coordinates(sld):
-    spc, l_adjusted, d_adjusted = sld
-    l_raw, d_raw = tri.deadjust_ld_using_lp_transformation_in_triangle_coordinates(l_adjusted, d_adjusted)
-    return spc, l_raw, d_raw
+# def get_raw_peel_coordinates_from_adjusted_peel_coordinates(sld):
+#     # this does not work; see comment on deadjust_ld_using_lp_transformation_in_triangle_coordinates() 
+#     spc, l_adjusted, d_adjusted = sld
+#     l_raw, d_raw = tri.deadjust_ld_using_lp_transformation_in_triangle_coordinates(l_adjusted, d_adjusted)
+#     return spc, l_raw, d_raw
 
 
 def get_adjusted_peel_coordinates_of_point(p: UnitSpherePoint):
@@ -149,11 +150,16 @@ def get_raw_peel_coordinates_from_point_code(pc):
     return spc, l_coord, d_coord
 
 
-def get_xyz_from_adjusted_peel_coordinates(sld, as_array=True):
+def get_xyz_from_adjusted_peel_coordinates(sld, as_array=True, float_precision_cutoff=1e-15):
     # take l_coord and d_coord at face value as linear proportions of the way through the half-peel
     # project the resulting point from the face plane to the sphere surface
     spc, l, d = sld
+    
     if spc in ["A", "B"]:
+        if 0 < l < float_precision_cutoff:
+            l = 0
+        if 0 < d < float_precision_cutoff:
+            d = 0
         assert l == 0 and d == 0, f"cannot have steps from a pole, but got spc={spc}, l={l}, d={d}"
 
     assert 0 <= l < 1 and 0 <= d < 1, f"must have peel coords in interval [0, 1), but got l={l}, d={d}"
@@ -295,29 +301,32 @@ def get_adjusted_peel_coordinates_from_xyz(xyz):
     return spc, l_coord, d_coord
 
 
-def get_xyz_from_point_code_using_peel_coordinates(pc, as_array=True):
-    raise DeprecationWarning("use functions in icosalattice.CoordinatesByPlaneGridding instead")
-    # sld_raw = get_raw_peel_coordinates_from_point_code(pc)
-    # sld_adjusted = get_adjusted_peel_coordinates_from_raw_peel_coordinates(sld_raw)
-    # xyz = get_xyz_from_adjusted_peel_coordinates(sld_adjusted, as_array=as_array)
-    # return xyz
+# def get_xyz_from_point_code_using_peel_coordinates(pc, as_array=True):
+#     raise DeprecationWarning("use functions in icosalattice.CoordinatesOfPointCode instead")
+#     # sld_raw = get_raw_peel_coordinates_from_point_code(pc)
+#     # sld_adjusted = get_adjusted_peel_coordinates_from_raw_peel_coordinates(sld_raw)
+#     # xyz = get_xyz_from_adjusted_peel_coordinates(sld_adjusted, as_array=as_array)
+#     # return xyz
 
 
-def get_point_code_from_xyz_using_peel_coordinates(xyz):
-    sld_adjusted = get_adjusted_peel_coordinates_from_xyz(xyz)
-    sld_raw = get_raw_peel_coordinates_from_adjusted_peel_coordinates(sld_adjusted)
-    pc = get_point_code_from_raw_peel_coordinates(sld_raw)
-    return pc
+# def get_point_code_from_xyz_using_peel_coordinates(xyz):
+#     raise Exception("do not use because the inverse adjustment is wrong; instead, search through points until you get an xyz that is sufficiently close")
+#     # sld_adjusted = get_adjusted_peel_coordinates_from_xyz(xyz)
+#     # sld_raw = get_raw_peel_coordinates_from_adjusted_peel_coordinates(sld_adjusted)
+#     # pc = get_point_code_from_raw_peel_coordinates(sld_raw)
+#     # return pc
 
 
-def get_latlon_from_point_code_using_peel_coordinates(pc, deg=True, as_array=True):
-    xyz = get_xyz_from_point_code_using_peel_coordinates(pc)
-    return mcm.unit_vector_cartesian_to_latlon(*xyz, deg=deg, as_array=as_array)
+# def get_latlon_from_point_code_using_peel_coordinates(pc, deg=True, as_array=True):
+#     raise DeprecationWarning("use functions in icosalattice.CoordinatesOfPointCode instead")
+#     # xyz = get_xyz_from_point_code_using_peel_coordinates(pc)
+#     # return mcm.unit_vector_cartesian_to_latlon(*xyz, deg=deg, as_array=as_array)
 
 
-def get_point_code_from_latlon_using_peel_coordinates(latlon, deg=True, as_array=True):
-    xyz = mcm.unit_vector_latlon_to_cartesian(*latlon, deg=deg, as_array=as_array)
-    return get_point_code_from_xyz_using_peel_coordinates(xyz)
+# def get_point_code_from_latlon_using_peel_coordinates(latlon, deg=True, as_array=True):
+#     raise Exception("do not use because the inverse adjustment is wrong; instead, search through points until you get an xyz that is sufficiently close")
+#     # xyz = mcm.unit_vector_latlon_to_cartesian(*latlon, deg=deg, as_array=as_array)
+#     # return get_point_code_from_xyz_using_peel_coordinates(xyz)
 
 
 def get_adjusted_ld_of_point_from_face_corners(xyz_proj, xyz0, xyz1, xyz2, xyz3, allow_one=False):

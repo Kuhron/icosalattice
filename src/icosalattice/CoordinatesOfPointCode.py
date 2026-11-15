@@ -44,16 +44,16 @@ METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ = {
     "cpg1": get_xyz_from_point_code_using_corrected_plane_gridding,  # "corrected plane gridding"
     "rta1": get_xyz_from_point_code_using_r_theta_adjustment,  # "r-theta adjustment"
 }
-CHOSEN_METHOD = "cpg1"
+METHOD_NAMES = METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ.keys()
 
 
-def get_xyz_from_point_code(pc, as_array=True):
-    f = METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ[CHOSEN_METHOD]
+def get_xyz_from_point_code(pc, method, as_array=True):
+    f = METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ[method]
     return f(pc, as_array=as_array)
 
 
-def get_latlon_from_point_code(pc, as_array=True):
-    xyz = get_xyz_from_point_code(pc)
+def get_latlon_from_point_code(pc, method, as_array=True):
+    xyz = get_xyz_from_point_code(pc, method)
     latlon = mcm.unit_vector_cartesian_to_latlon(*xyz, as_array=as_array)
     return latlon
 
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     # pcs = get_all_point_codes_at_iteration(iterations=5)
 
-    method_name = "corrected plane gridding"
+    method_name = "ebs1"
     func_pc_to_xyz = METHOD_NAME_TO_FUNCTION_POINT_CODE_TO_XYZ[method_name]
     print(f"getting xyz coordinates using {method_name!r} method")
     xyzs = []
