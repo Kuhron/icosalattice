@@ -180,16 +180,6 @@ def get_latlons_from_point_numbers(pns):
     return [get_latlon_from_point_number(pn) for pn in pns]
 
 
-def get_latlons_from_point_codes(pcs, xyzg):
-    res = []
-    for i, pc in enumerate(pcs):
-        if i % 1000 == 0:
-            print(f"getting latlons from point codes: {i} / {len(pcs)}")
-        latlon = get_latlon_from_point_code(pc, xyzg)
-        res.append(latlon)
-    return res
-
-
 def get_xyz_from_point_number(pn):
     if pn < 12:
         return get_xyz_of_initial_point_number(pn)
@@ -199,10 +189,6 @@ def get_xyz_from_point_number(pn):
 
 def get_xyzs_from_point_numbers(pns):
     return [get_xyz_from_point_number(pn) for pn in pns]
-
-
-def get_xyzs_from_point_codes(pcs, xyzg):
-    return [get_xyz_from_point_code(pc, xyzg) for pc in pcs]
 
 
 def get_xyzs_from_lookup_numbers(lns, xyzg):
@@ -876,94 +862,12 @@ def get_direction_label_from_number(i):
     return ["L", "DL", "D", "R", "UR", "U"][i]
 
 
-def get_nearest_icosa_point_at_lower_iteration(pc, iterations, xyzg):
-    pc_iter = get_iteration_number_from_point_code(pc)
-    if iterations == pc_iter:
-        return pc
-    elif iterations > pc_iter:
-        return pc + "0"*(iterations - pc_iter)
-    else:
-        ancestor = pc[:iterations+1]
-        adj = get_adjacency_from_point_code(ancestor)
-        pcs = adj + [ancestor]
-        # find the closest of these, it shouldn't be anything else (I think, haven't proven that)
-        xyzs = get_xyzs_from_point_codes(pcs, xyzg)
-        xyz = get_xyz_from_point_code(pc, xyzg)
-        ds = [mcm.xyz_distance(xyz, xyz1) for xyz1 in xyzs]
-        index = np.argmin(ds)
-        return pcs[index]
-
-
-def get_nearest_icosa_point_to_latlon(latlon, maximum_distance, planet_radius):
-    lat, lon = latlon
-    xyz = mcm.unit_vector_latlon_to_cartesian(lat, lon)
-    return get_nearest_icosa_point_to_xyz(xyz, maximum_distance, planet_radius)
-
-
-def get_nearest_icosa_point_to_xyz(xyz, maximum_distance, planet_radius):
-    print("getting nearest icosa point to {}".format(xyz))
-    max_distance_normalized = maximum_distance / planet_radius
-    candidate_usps, candidate_adjacencies = STARTING_POINTS
-    iteration = 0
-    while True:
-        # print("i={}".format(iteration))
-        nearest_candidate_usp, distance_normalized = get_nearest_neighbor_to_xyz(xyz, candidate_usps)
-        assert nearest_candidate_usp.point_number is not None
-        print("nearest candidate is {} at distance of {}".format(nearest_candidate_usp, distance_normalized))
-        if distance_normalized <= max_distance_normalized:
-            print("-- done getting nearest icosa point to {}".format(xyz))
-            distance_in_units = distance_normalized * planet_radius
-            return nearest_candidate_usp, distance_normalized, distance_in_units
-
-        iteration += 1
-        if iteration > 30:
-            raise RuntimeError("while loop ran too many times")
-        nearest_candidate_neighbor_point_numbers = get_adjacency_from_point_number(nearest_candidate_usp.point_number, iteration)
-        nearest_candidate_neighbor_point_numbers = [x for x in nearest_candidate_neighbor_point_numbers if x is not None]
-        nearest_candidate_neighbors_usp = [get_usp_from_point_number(pi) for pi in nearest_candidate_neighbor_point_numbers]
-        candidate_usps = nearest_candidate_neighbors_usp + [nearest_candidate_usp]
-
-
-def get_nearest_neighbor_to_latlon(latlon, candidates_usp):
-    lat, lon = latlon
-    xyz = mcm.unit_vector_latlon_to_cartesian(lat, lon)
-    candidates_dict = {c.xyz(): c for c in candidates_usp}
-    candidates_xyz = list(candidates_dict.keys())
-    nn_xyz, d = get_nearest_neighbor_xyz_to_xyz(xyz, candidates_xyz)
-    return candidates_dict[nn_xyz], d
-
-
-def get_nearest_neighbor_to_xyz(xyz, candidates_usp):
-    candidates_dict = {c.xyz(): c for c in candidates_usp}
-    candidates_xyz = list(candidates_dict.keys())
-    nn_xyz, d = get_nearest_neighbor_xyz_to_xyz(xyz, candidates_xyz)
-    return candidates_dict[nn_xyz], d
-
-
 def get_nearest_neighbor_point_number_to_point_number(pn, candidates_pn):
     xyz = get_xyz_from_point_number(pn)
     candidates_dict = {get_xyz_from_point_number(c): c for c in candidates_pn}
     candidates_xyz = list(candidates_dict.keys())
     nn_xyz, d = get_nearest_neighbor_xyz_to_xyz(xyz, candidates_xyz)
     return candidates_dict[nn_xyz], d
-
-
-def get_nearest_neighbor_xyz_to_xyz(xyz, candidates_xyz):
-    p = np.array(xyz)
-    assert p.shape == (3,), p.shape
-    ps = np.array(candidates_xyz)
-    n = len(candidates_xyz)
-    if n == 0:
-        raise ValueError("empty candidates list")
-    assert ps.shape == (n, 3), f"ps should have shape ({n}, 3) but got {ps.shape}:\n{ps}"
-    dx = p-ps
-    d = sum((dx**2).T) ** 0.5
-    assert d.shape == (n,)
-    nn_index = np.argmin(d)
-    min_d = min(d)
-    nn_arr = ps[nn_index]
-    nn_xyz = tuple(nn_arr)
-    return nn_xyz, min_d
 
 
 def get_nearest_neighbors_ln_to_ln_with_distance(query_lns, candidate_lns, xyzg, k_neighbors=1, allow_self=False):

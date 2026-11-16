@@ -52,10 +52,26 @@ def get_xyz_from_point_code(pc, method, as_array=True):
     return f(pc, as_array=as_array)
 
 
+def get_xyzs_from_point_codes(pcs, method, as_array=True):
+    lst = [get_xyz_from_point_code(pc, method, as_array=False) for pc in pcs]
+    if as_array:
+        return np.array(lst)
+    else:
+        return lst
+
+
 def get_latlon_from_point_code(pc, method, as_array=True):
     xyz = get_xyz_from_point_code(pc, method)
     latlon = mcm.unit_vector_cartesian_to_latlon(*xyz, as_array=as_array)
     return latlon
+
+
+def get_latlons_from_point_codes(pcs, method, as_array=True):
+    lst = [get_latlon_from_point_code(pc, method, as_array=False) for pc in pcs]
+    if as_array:
+        return np.array(lst)
+    else:
+        return lst
 
 
 def get_stats_about_point_placements(pc_to_xyz):

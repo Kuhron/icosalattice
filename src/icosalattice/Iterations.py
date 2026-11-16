@@ -31,3 +31,15 @@ def get_exact_n_points_from_iterations(n_iters: int) -> int:
 
 def get_exact_iterations_from_n_points(n_points):
     return np.log((n_points - 2)/10) / np.log(4)  # just use change of base since np.log(arr, b) doesn't like arrays
+
+
+def adjust_point_code_to_iteration(pc, iteration):
+    pc_stripped = pca.strip_trailing_zeros(pc)
+    pc_i = get_iteration_born_from_point_code(pc_stripped)
+    if iteration < pc_i:
+        raise ValueError(f"point code {pc} was born at iteration {pc_i} and cannot be adjusted to earlier iteration {iteration}")
+    elif iteration == pc_i:
+        return pc_stripped
+    else:
+        return pca.pad_with_trailing_zeros(pc_stripped, iterations=iteration)
+    

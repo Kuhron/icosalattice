@@ -1,8 +1,6 @@
-import numpy as np
-
 import icosalattice.Edges as ed
 import icosalattice.StartingPoints as sp
-from icosalattice.PointRepresentationAsFloat import point_float_to_code
+from icosalattice.RandomUtil import get_pseudorandom_point_codes
 
 
 def get_test_point_codes():
@@ -17,14 +15,7 @@ def get_test_point_codes():
     edge_pcs += ["C10101", "D3333", "E000303", "F22", "G111011", "H330333", "I202202", "J3003", "K1000001", "L2222022"]
     face_pcs = ["C10201", "D3320222", "E12", "F2023", "G11121", "H000102", "I0111013", "J3323", "K102", "L3212101"]
 
-    pseudorandom_pcs = []
-    for x in range(13, 13+29*18+1, 29):
-        r = x**3.14159 % 1
-        i = int(x**3 / 7.22023918 - (r*4)**2) % 10 + 2
-        f = i + r
-        pc = point_float_to_code(f, max_iterations=7, allow_clipping=True)
-        pseudorandom_pcs.append(pc)
-    
+    pseudorandom_pcs = get_pseudorandom_point_codes(n_pcs=18, seed=3939.22023918)
     various_pcs = ["H2223213", "K0010231", "J1203121", "D22023", "F1121", "G101021", "I3333202"]
 
     no_trailing_zero_pcs = vertex_pcs + edge_pcs + face_pcs + pseudorandom_pcs + various_pcs
@@ -32,12 +23,6 @@ def get_test_point_codes():
 
     pcs = no_trailing_zero_pcs + trailing_zero_pcs
     return pcs
-
-
-def get_test_floats_01(n):
-    ns = np.pi * np.arange(1, n+1)
-    xs = (ns**1.3 + ns**2.1) % 1
-    return xs
 
 
 TEST_POINT_CODES = get_test_point_codes()

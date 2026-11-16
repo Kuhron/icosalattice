@@ -65,7 +65,7 @@ def get_point_code_from_raw_peel_coordinates(sld, max_iterations=15, allow_clipp
         # print(f"iteration {iterations}, {l_coord = }, {d_coord = }, {s = }")
         if iterations >= max_iterations:
             if allow_clipping:
-                print(f"max iterations reached for getting point code from peel coordinates; clipping")
+                # print(f"max iterations reached for getting point code from peel coordinates; clipping")
                 break
             else:
                 raise RuntimeError(f"failed to finish getting point code from peel coordinates without clipping\n{l_coord = }, {d_coord = }, current pc = {s}")

@@ -32,7 +32,7 @@ def point_float_to_code(x, max_iterations=128, allow_clipping=False):
         iterations += 1
         if iterations > max_iterations:
             if allow_clipping:
-                print(f"max iterations reached for getting point code from float representation; clipping")
+                # print(f"max iterations reached for getting point code from float representation; clipping")
                 break
             else:
                 raise ValueError(f"invalid float representation of point code; remainder found: {x_orig}")
